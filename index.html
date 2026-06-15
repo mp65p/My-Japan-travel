@@ -426,7 +426,7 @@ function enterDemo(){ STATE.demo=true; STATE.code=null; startApp(); }
 function startApp(){
   document.getElementById("loginScreen").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
-  document.getElementById("modeLabel").textContent = STATE.demo? "示範模式" : "已登入";
+  document.getElementById("modeLabel").textContent = (STATE.demo? "示範模式" : "已登入")+" · v3";
   buildFlightSelects();
   const s=STATE.settings;
   const setv=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v; };
