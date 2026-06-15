@@ -670,7 +670,7 @@ function setLegMin(di,ii,val){ const v=val===""?null:Math.max(0,parseInt(val,10)
 function setAirportMin(di,dir,val){ const v=val===""?null:Math.max(0,parseInt(val,10)||0); const d=STATE.days[di]; if(dir==='in') d._airportInMin=v; else d._airportOutMin=v; recompute(); scheduleSave(); }
 function routeTransit(origin,destination,cb){
   dirService.route({origin,destination,travelMode:google.maps.TravelMode.TRANSIT},(res,status)=>{
-    if(status!=="OK"){ toast("這段查不到大眾運輸路線"); return; }
+    if(status!=="OK"){ toast("交通查詢失敗："+status); return; }
     cb(parseRoute(res.routes[0].legs[0]));
   });
 }
