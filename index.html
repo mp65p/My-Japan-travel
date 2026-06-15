@@ -134,6 +134,27 @@ label.lbl{font-size:12px;color:var(--muted);font-weight:600;display:block;margin
 .leg-min{width:58px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--paper-2);font-size:13px;text-align:center}
 .leg-min-wrap{font-weight:700;font-size:13px}
 .leg-hint{font-size:11px;color:var(--check);margin-top:6px}
+.src{font-size:10px;font-weight:700;padding:1px 6px;border-radius:5px;margin-left:5px}
+.src-g{background:var(--jr-bg);color:var(--jr)}
+.src-b{background:var(--check-bg);color:var(--check)}
+.route-head{font-size:11px;color:var(--muted);margin:4px 0 6px}
+.route-steps{display:flex;flex-direction:column}
+.rstep{display:flex;gap:8px;align-items:flex-start;padding:5px 0 5px 10px;border-left:3px solid var(--line);margin-left:3px}
+.rstep.walk{border-left-style:dotted}
+.rstep.train{border-left-color:var(--jr)}
+.rstep.bus{border-left-color:var(--warn)}
+.rmode{font-size:10.5px;font-weight:700;min-width:30px;color:var(--ink)}
+.rstep.walk .rmode{color:var(--muted)}
+.rtxt{font-size:12px;line-height:1.5;color:var(--ink)}
+.rtxt b{font-size:12.5px}
+.rtxt .line-chip{margin-left:4px}
+.alt-row{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:7px}
+.alt-lbl{font-size:11px;color:var(--muted)}
+.alt-chip{font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+.alt-chip.on{border-color:var(--indigo);background:var(--paper-2);color:var(--indigo);font-weight:700}
+.note-row{display:flex;align-items:center;gap:6px;margin-top:7px;font-size:11.5px;color:var(--muted)}
+.note-in{flex:1;padding:4px 7px;border:1px solid var(--line);border-radius:6px;background:var(--paper-2);font-size:12px;color:var(--ink)}
+.leg-none{background:var(--warn-bg);color:var(--warn);border:1px dashed var(--warn);border-radius:8px;padding:8px 10px;font-size:11.5px;margin-top:4px;line-height:1.55}
 .empty{text-align:center;color:var(--muted);font-size:13px;padding:20px 10px}
 
 .list-cat{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
@@ -522,10 +543,14 @@ function openAddSheet(di){
 function closeAddSheet(){ document.getElementById("addSheet").classList.add("hidden"); }
 function addSpotToTarget(spot){
   if(addTargetDay==null || !STATE.days[addTargetDay]) return;
-  STATE.days[addTargetDay].items.push({...spot, stay:60});
-  resetDayRoutes(addTargetDay);
+  const di=addTargetDay, day=STATE.days[di];
+  day.items.push({...spot, stay:60});
   recompute(); scheduleSave();
-  toast(`已加入 Day ${addTargetDay+1}：${spot.name}`);
+  toast(`已加入 Day ${di+1}：${spot.name}`);
+  const n=day.items.length, last=STATE.days.length-1, s=STATE.settings;
+  if(di===0 && n===1) calcAirportLeg(0,'in');
+  if(n>=2) calcLeg(di,n-2);
+  if(di===last && s.departFlight) calcAirportLeg(di,'out');
 }
 
 /* ============ 路線重置 ============ */
@@ -538,20 +563,29 @@ function resetDayRoutes(di){
 /* ============ 行程渲染 ============ */
 function legData(kind,di,ii){
   const day=STATE.days[di];
-  if(kind==='spot'){ const it=day.items[ii]; return {min:it._legMin, route:it._route, calc:`calcLeg(${di},${ii})`, setMin:`setLegMin(${di},${ii},this.value)`}; }
-  if(kind==='in'){ return {min:day._airportInMin, route:day._airportInRoute, calc:`calcAirportLeg(${di},'in')`, setMin:`setAirportMin(${di},'in',this.value)`}; }
-  return {min:day._airportOutMin, route:day._airportOutRoute, calc:`calcAirportLeg(${di},'out')`, setMin:`setAirportMin(${di},'out',this.value)`};
+  if(kind==='spot'){ const it=day.items[ii]; return {kind,di,ii,min:it._legMin, route:it._route, note:it._legNote||"", calc:`calcLeg(${di},${ii})`, setMin:`setLegMin(${di},${ii},this.value)`, setNote:`setLegNote('spot',${di},${ii},this.value)`}; }
+  if(kind==='in'){ return {kind,di,ii:0,min:day._airportInMin, route:day._airportInRoute, note:day._airportInNote||"", calc:`calcAirportLeg(${di},'in')`, setMin:`setAirportMin(${di},'in',this.value)`, setNote:`setLegNote('in',${di},0,this.value)`}; }
+  return {kind,di,ii:0,min:day._airportOutMin, route:day._airportOutRoute, note:day._airportOutNote||"", calc:`calcAirportLeg(${di},'out')`, setMin:`setAirportMin(${di},'out',this.value)`, setNote:`setLegNote('out',${di},0,this.value)`};
 }
 function makeLeg(kind,di,ii){
   const d=legData(kind,di,ii);
   const leg=document.createElement("div"); leg.className="leg"; const inner=document.createElement("div");
-  const minVal = (d.min!=null? d.min : "");
+  const minVal=(d.min!=null?d.min:"");
+  const r=d.route;
+  let src="";
+  if(r&&r.source==='google') src=`<span class="src src-g">Google</span>`;
+  else if(r&&r.source==='builtin') src=`<span class="src src-b">內建參考</span>`;
   let html=`<div class="leg-card">
-    <div class="leg-top"><span>🚆 交通</span>
+    <div class="leg-top"><span>交通${src}</span>
       <span class="leg-min-wrap">約 <input type="number" class="leg-min" value="${minVal}" placeholder="—" onchange="${d.setMin}"> 分</span></div>`;
-  if(d.route) html+=renderRouteDetail(d.route);
-  if(MAPS_READY) html+=`<button class="calc-btn" onclick="${d.calc}">用 Google 計算（自動帶入分鐘＋路線）</button>`;
-  else if(!d.route) html+=`<div class="leg-hint">示範：可手動填分鐘，或部署後用 Google 計算</div>`;
+  if(r) html+=renderRouteDetail(r);
+  if(r&&r.alts&&r.alts.length>1){
+    const chips=r.alts.map((a,idx)=>`<button class="alt-chip${idx===(r._altIdx||0)?' on':''}" onclick="chooseAlt('${kind}',${di},${ii},${idx})">路線${idx+1}·${a.transfers===0?'直達':a.transfers+'轉'}·${a.totalMin}分</button>`).join("");
+    html+=`<div class="alt-row"><span class="alt-lbl">其他路線：</span>${chips}</div>`;
+  }
+  html+=`<div class="note-row">備註 <input class="note-in" value="${(d.note||'').replace(/"/g,'&quot;')}" placeholder="可填寫／修正" onchange="${d.setNote}"></div>`;
+  if(MAPS_READY) html+=`<button class="calc-btn" onclick="${d.calc}">${r?'重新用 Google 計算':'用 Google 計算（自動帶入分鐘＋路線）'}</button>`;
+  else if(!r) html+=`<div class="leg-hint">手動填分鐘，或部署後用 Google 計算</div>`;
   html+=`</div>`;
   inner.innerHTML=html; leg.appendChild(inner); return leg;
 }
@@ -634,13 +668,30 @@ function renderDays(){
   });
 }
 function renderRouteDetail(r){
-  const chips=r.steps.map(x=>{
-    const cls=x.pass==="jr"?"pass-jr":x.pass==="no"?"pass-no":"pass-check";
-    const ico=x.pass==="jr"?"✓Pass":x.pass==="no"?"自費":"?核對";
-    return `<span class="line-chip ${cls}">${x.label} · ${ico}</span>`;
-  }).join("");
-  return `<div style="font-size:11.5px;color:var(--muted);margin-top:4px">含轉乘緩衝 ${r.buffer} 分・${r.transfers} 次轉乘</div>
-    <div class="leg-steps">${chips}</div>`;
+  if(r.source==='none'){
+    return `<div class="leg-none">⚠ 此段沒有自動交通資料，請手動填分鐘。<br>可用 Google Maps App 查實際路線。</div>`;
+  }
+  const steps=r.steps||[];
+  let rows="";
+  steps.forEach((x,i)=>{
+    const mode=x.mode||'train';
+    if(mode==='walk'){
+      const nxt=steps[i+1];
+      const dest=(nxt&&nxt.from)?` → ${nxt.from}`:"";
+      rows+=`<div class="rstep walk"><span class="rmode">走路</span><span class="rtxt">${x.mins!=null?x.mins+' 分':''}${dest}</span></div>`;
+    } else {
+      const line=x.line||x.label||(mode==='bus'?'公車':'電車');
+      const pass=x.pass==='jr'?'jr':'no';
+      const pcls=pass==='jr'?'pass-jr':'pass-no';
+      const pico=pass==='jr'?'JR Pass 可用':'自費';
+      const mlabel=mode==='bus'?'公車':'電車';
+      const seg=(x.from||x.to)?`${x.from||''} → ${x.to||''}　`:"";
+      rows+=`<div class="rstep ${mode}"><span class="rmode">${mlabel}</span><span class="rtxt"><b>${line}</b><br>${seg}${x.mins!=null?'約'+x.mins+'分':''}<span class="line-chip ${pcls}">${pico}</span></span></div>`;
+    }
+  });
+  const tcount=steps.filter(s=>(s.mode||'train')!=='walk').length;
+  const head=`${tcount<=1?'直達':r.transfers+' 次轉乘'}　含緩衝共約 ${r.totalMin!=null?r.totalMin:'—'} 分`;
+  return `<div class="route-head">${head}</div><div class="route-steps">${rows}</div>`;
 }
 function setDayStart(di,val){ STATE.days[di].start=val||"09:00"; recompute(); scheduleSave(); }
 function setStay(di,ii,val){ STATE.days[di].items[ii].stay=Math.max(0,parseInt(val||"0",10)||0); recompute(); scheduleSave(); }
@@ -654,47 +705,109 @@ function del(di,ii){ STATE.days[di].items.splice(ii,1); resetDayRoutes(di); reco
 
 /* ============ 交通計算 ============ */
 function calcLeg(di,ii){
-  if(!MAPS_READY) return;
-  const day=STATE.days[di], a=day.items[ii], b=day.items[ii+1];
-  routeTransit({lat:a.lat,lng:a.lng},{lat:b.lat,lng:b.lng},r=>{ a._route=r; a._legMin=r.totalMin; recompute(); scheduleSave(); });
+  const day=STATE.days[di], a=day.items[ii], b=day.items[ii+1]; if(!a||!b) return;
+  resolveLeg(a.name,b.name,{lat:a.lat,lng:a.lng},{lat:b.lat,lng:b.lng}, legRouteRef('spot',di,ii));
 }
 function calcAirportLeg(di,dir){
-  if(!MAPS_READY) return;
-  const day=STATE.days[di], s=STATE.settings;
-  let from,to;
-  if(dir==='in'){ const ap=AIRPORTS[s.outToAirport], it=day.items[0]; from={lat:ap.lat,lng:ap.lng}; to={lat:it.lat,lng:it.lng}; }
-  else { const ap=AIRPORTS[s.retFromAirport], it=day.items[day.items.length-1]; from={lat:it.lat,lng:it.lng}; to={lat:ap.lat,lng:ap.lng}; }
-  routeTransit(from,to,r=>{ if(dir==='in'){day._airportInRoute=r;day._airportInMin=r.totalMin;} else {day._airportOutRoute=r;day._airportOutMin=r.totalMin;} recompute(); scheduleSave(); });
+  const day=STATE.days[di], s=STATE.settings; if(!day.items.length) return;
+  let from,to,fromName,toName;
+  if(dir==='in'){ const ap=AIRPORTS[s.outToAirport], it=day.items[0]; if(!ap) return; from={lat:ap.lat,lng:ap.lng}; to={lat:it.lat,lng:it.lng}; fromName=ap.name; toName=it.name; }
+  else { const ap=AIRPORTS[s.retFromAirport], it=day.items[day.items.length-1]; if(!ap) return; from={lat:it.lat,lng:it.lng}; to={lat:ap.lat,lng:ap.lng}; fromName=it.name; toName=ap.name; }
+  resolveLeg(fromName,toName,from,to, legRouteRef(dir,di,0));
 }
 function setLegMin(di,ii,val){ const v=val===""?null:Math.max(0,parseInt(val,10)||0); STATE.days[di].items[ii]._legMin=v; recompute(); scheduleSave(); }
 function setAirportMin(di,dir,val){ const v=val===""?null:Math.max(0,parseInt(val,10)||0); const d=STATE.days[di]; if(dir==='in') d._airportInMin=v; else d._airportOutMin=v; recompute(); scheduleSave(); }
-function routeTransit(origin,destination,cb){
-  dirService.route({origin,destination,travelMode:google.maps.TravelMode.TRANSIT,transitOptions:{departureTime:new Date()}},(res,status)=>{
-    if(status!=="OK"){ toast("交通查詢失敗："+status); return; }
-    cb(parseRoute(res.routes[0].legs[0]));
-  });
+function legRouteRef(kind,di,ii){
+  const day=STATE.days[di];
+  if(kind==='spot') return {get:()=>day.items[ii]._route, setR:v=>day.items[ii]._route=v, setM:v=>day.items[ii]._legMin=v};
+  if(kind==='in') return {get:()=>day._airportInRoute, setR:v=>day._airportInRoute=v, setM:v=>day._airportInMin=v};
+  return {get:()=>day._airportOutRoute, setR:v=>day._airportOutRoute=v, setM:v=>day._airportOutMin=v};
+}
+function depTime(){
+  const d=new Date(); d.setDate(d.getDate()+1);
+  const w=d.getDay(); if(w===6) d.setDate(d.getDate()+2); else if(w===0) d.setDate(d.getDate()+1);
+  d.setHours(10,0,0,0); return d;
+}
+function resolveLeg(fromName,toName,from,to,ref){
+  const apply=route=>{ ref.setR(route); if(route&&route.totalMin!=null) ref.setM(route.totalMin); recompute(); scheduleSave(); };
+  if(MAPS_READY && dirService){
+    dirService.route({origin:from,destination:to,travelMode:google.maps.TravelMode.TRANSIT,transitOptions:{departureTime:depTime()},provideRouteAlternatives:true},(res,status)=>{
+      if(status==="OK" && res.routes && res.routes.length){
+        const parsed=res.routes.map(rt=>parseRoute(rt.legs[0]));
+        parsed.sort((a,b)=>(a.transfers-b.transfers)||(a.totalMin-b.totalMin));
+        const alts=parsed.slice(0,3).map(p=>({transfers:p.transfers,totalMin:p.totalMin,buffer:p.buffer,steps:p.steps}));
+        const best=Object.assign({},alts[0],{alts:alts,source:'google',_altIdx:0});
+        apply(best);
+      } else { applyFallback(fromName,toName,apply,status); }
+    });
+  } else { applyFallback(fromName,toName,apply,'NO_MAPS'); }
+}
+function applyFallback(fromName,toName,apply,status){
+  const b=builtinRoute(fromName,toName);
+  if(b){ apply(b); }
+  else { apply({source:'none',status:status,steps:[],transfers:0,buffer:0,totalMin:null}); }
+}
+function chooseAlt(kind,di,ii,idx){
+  const ref=legRouteRef(kind,di,ii), r=ref.get();
+  if(!r||!r.alts||!r.alts[idx]) return;
+  const a=r.alts[idx];
+  ref.setR(Object.assign({},a,{alts:r.alts,source:r.source||'google',_altIdx:idx}));
+  if(a.totalMin!=null) ref.setM(a.totalMin);
+  recompute(); scheduleSave();
+}
+function setLegNote(kind,di,ii,val){
+  const day=STATE.days[di]; if(!day) return;
+  if(kind==='spot'){ if(day.items[ii]) day.items[ii]._legNote=val; }
+  else if(kind==='in') day._airportInNote=val;
+  else day._airportOutNote=val;
+  scheduleSave();
 }
 function parseRoute(leg){
   const BUFFER_PER_TRANSFER=5; const steps=[]; let transit=0;
-  leg.steps.forEach(s=>{
-    if(s.travel_mode==="TRANSIT"&&s.transit){
+  (leg.steps||[]).forEach(s=>{
+    const mins=Math.round((((s.duration&&s.duration.value)||0))/60);
+    if(s.travel_mode==="WALKING"){
+      if(mins>=1) steps.push({mode:'walk',mins:mins});
+    } else if(s.travel_mode==="TRANSIT" && s.transit){
       transit++;
-      const line=s.transit.line||{};
+      const td=s.transit, line=td.line||{};
       const agency=(line.agencies&&line.agencies[0]&&line.agencies[0].name)||"";
+      const vt=(line.vehicle&&(line.vehicle.type||line.vehicle.name))||"";
       const name=line.name||line.short_name||agency||"電車";
-      steps.push({label:name,pass:classifyPass(name+" "+agency)});
+      const isBus=/BUS|INTERCITY_BUS|TROLLEYBUS/i.test(vt)||/バス|\bbus\b/i.test(name);
+      steps.push({mode:isBus?'bus':'train',line:name,from:(td.departure_stop&&td.departure_stop.name)||"",to:(td.arrival_stop&&td.arrival_stop.name)||"",mins:mins,pass:classifyPass(name+" "+agency+" "+vt)});
     }
   });
   const transfers=Math.max(transit-1,0);
-  return {steps,transfers,buffer:transfers*BUFFER_PER_TRANSFER,totalMin:Math.round((leg.duration?leg.duration.value:0)/60)+transfers*BUFFER_PER_TRANSFER};
+  const total=Math.round((((leg.duration&&leg.duration.value)||0))/60)+transfers*BUFFER_PER_TRANSFER;
+  return {steps:steps,transfers:transfers,buffer:transfers*BUFFER_PER_TRANSFER,totalMin:total,source:'google'};
+}
+/* 內建參考路線（僅在 Google 查無時使用，平日約略、非即時） */
+function builtinRoute(aName,bName){
+  const a=aName||"", b=bName||"";
+  const has=(s,arr)=>arr.some(k=>s.indexOf(k)>=0);
+  const pair=(x,y)=>(has(a,x)&&has(b,y))||(has(a,y)&&has(b,x));
+  const train=(line,f,t,m,pass)=>({mode:'train',line:line,from:f,to:t,mins:m,pass:pass||'check'});
+  const bus=(line,f,t,m)=>({mode:'bus',line:line,from:f,to:t,mins:m,pass:'no'});
+  const mk=(total,steps)=>({source:'builtin',steps:steps,transfers:Math.max(steps.filter(s=>s.mode!=='walk').length-1,0),buffer:0,totalMin:total});
+  if(pair(['鳥取站','鳥取駅','鳥取'],['砂丘','砂之美術館','砂の']))
+    return mk(25,[bus('日ノ丸/日交 砂丘線巴士','鳥取駅','鳥取砂丘',22)]);
+  if(has(a,['六甲'])||has(b,['六甲']))
+    return mk(45,[train('JR神戸線','三ノ宮','六甲道',6,'jr'),bus('神戸市バス＋六甲ケーブル','六甲道','六甲山上',38)]);
+  if(pair(['有馬'],['三宮','三ノ宮','神戶','神戸','北野','南京']))
+    return mk(45,[bus('阪急/神姫バス（直達）','三宮','有馬温泉',42)]);
+  return null;
 }
 function classifyPass(text){
-  const t=text.toLowerCase();
-  if(t.includes("hakuto")||t.includes("はくと")||t.includes("智頭")||t.includes("chizu")) return "jr";
-  if(t.includes("shinkansen")||t.includes("新幹線")) return "check";
-  if(/(subway|metro|地下鉄|地下鐵|阪急|hankyu|阪神|hanshin|近鉄|近鐵|kintetsu|南海|nankai|京阪|keihan|bus|バス|tram|市営)/.test(t)) return "no";
-  if(/(jr|japan rail|西日本旅客|west japan)/.test(t)) return "jr";
-  return "check";
+  const t=(text||"").toLowerCase();
+  // 私鐵 / 地鐵 / 巴士 / 纜車 → 自費（先判，避免被下方 JR 規則誤判）
+  if(/(metro|subway|地下鉄|地下鐵|阪急|hankyu|阪神|hanshin|近鉄|近鐵|近畿日本|kintetsu|南海|nankai|京阪|keihan|\bbus\b|バス|市営|市バス|cable|ケーブル|ropeway|ロープウェイ|tram|路面|嵐電|叡山|京福)/.test(t)) return "no";
+  // 智頭急行 スーパーはくと：關西廣域 Pass 涵蓋至鳥取 → 可用
+  if(/(はくと|hakuto|智頭|chizu)/.test(t)) return "jr";
+  // JR 西日本系統（JR西日本/旅客鉄道、はるか/くろしお/こうのとり等特急、環状・嵯峨野・大和路、新快速/快速 等）→ 可用
+  if(/(jr|japan rail|旅客鉄道|west japan|はるか|haruka|くろしお|kuroshio|こうのとり|環状|環狀|嵯峨野|大和路|関空快速|新快速|快速|普通|山陽新幹線)/.test(t)) return "jr";
+  // 其餘無法明確對應 → 保守視為自費
+  return "no";
 }
 
 /* ============ 時間軸 ============ */
