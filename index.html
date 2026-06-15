@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>関西旅程 ｜ 行程・交通・行前清單</title>
+
+<!-- ============================================================
+  🔑 設定區（部署時換成你自己的 key；沒填也能用「示範模式」看畫面）
+============================================================ -->
+<script>
+  const GOOGLE_MAPS_API_KEY = "AIzaSyBG11nA1g7rzseSNfacM-xYzrG_rlTpy20";
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBGfQ1oKOrt723tJ3w7LIwDLSh0nGwRF30",
+    authDomain: "my-project-c89db.firebaseapp.com",
+    projectId: "my-project-c89db",
+    storageBucket: "my-project-c89db.firebasestorage.app",
+    messagingSenderId: "301172719437",
+    appId: "1:301172719437:web:83c981eea84caf77c38104"
+  };
+  const JR_PASS_TYPE = "kansai-wide"; // 你的：關西廣域版
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#F4F0E7; --paper-2:#FBF8F1; --card:#FFFFFF;
+  --indigo:#1C2E4A; --indigo-soft:#33507A; --ink:#23262B; --muted:#857C6A; --line:#E3DCCC;
+  --jr:#1C7A4E; --jr-bg:#E6F2EB; --warn:#C24A2E; --warn-bg:#F8E9E3; --check:#B5832B; --check-bg:#F6EFDC;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Noto Sans TC","PingFang TC",system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+.mincho{font-family:"Shippori Mincho",serif}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select{font-family:inherit;font-size:16px}
+.hidden{display:none !important}
+
+.topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--indigo);color:#fff}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .logo{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,var(--jr),#0f5d3a);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff}
+.brand h1{font-size:16px;margin:0;letter-spacing:.5px}
+.brand .sub{font-size:10.5px;opacity:.7;letter-spacing:1px}
+.pass-chip{font-size:11px;background:rgba(255,255,255,.14);padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.2)}
+.save-status{font-size:10px;opacity:.8;margin-top:5px;text-align:right}
+
+.wrap{max-width:680px;margin:0 auto;padding:16px 16px 120px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.eyebrow{font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;font-weight:600}
+.sub-h{font-size:13px;font-weight:700;color:var(--indigo);margin:10px 0 8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--indigo);color:#fff;border-radius:10px;padding:11px 16px;font-size:14px;font-weight:600;width:100%}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:transparent;color:var(--indigo);border:1.5px solid var(--indigo)}
+.btn.small{width:auto;padding:7px 12px;font-size:12.5px}
+.add-spot-btn{margin-top:10px}
+.field{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--paper-2);margin-bottom:10px}
+.field:focus{outline:none;border-color:var(--indigo)}
+select.field{padding:11px 12px}
+.grid2{display:flex;gap:8px}
+.grid2>div{flex:1;min-width:0}
+.grid2 .field{margin-bottom:8px}
+label.lbl{font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px}
+.trip-len{font-size:12.5px;color:var(--indigo);font-weight:700;margin:2px 0 6px}
+
+.login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.login-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:30px 26px;max-width:380px;width:100%;text-align:center;box-shadow:0 18px 50px -28px rgba(28,46,74,.4)}
+.login-card .big-logo{width:62px;height:62px;border-radius:16px;margin:0 auto 16px;background:linear-gradient(135deg,var(--indigo),#0f5d3a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px}
+.login-card h2{margin:0 0 4px;font-size:21px}
+.login-card p.tag{margin:0 0 22px;color:var(--muted);font-size:13px}
+.divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:16px 0}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+.login-note{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.5}
+.err{color:var(--warn);font-size:13px;margin-top:8px;min-height:18px}
+
+.city-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
+.city-tab{white-space:nowrap;padding:8px 16px;border-radius:999px;background:var(--paper-2);border:1.5px solid var(--line);font-size:13.5px;font-weight:600;color:var(--muted)}
+.city-tab.active{background:var(--indigo);color:#fff;border-color:var(--indigo)}
+.spot-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.spot-btn{text-align:left;background:var(--paper-2);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.spot-btn:active{border-color:var(--indigo)}
+.spot-btn .add{color:var(--jr);font-size:18px;font-weight:700;flex-shrink:0}
+
+.result-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.result-row:last-child{border-bottom:none}
+.result-row .name{font-size:13.5px;font-weight:600}
+.result-row .addr{font-size:11.5px;color:var(--muted)}
+
+.day-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px}
+.day-tag{font-family:"Shippori Mincho",serif;font-size:20px;color:var(--indigo)}
+.day-date{font-size:12px;color:var(--muted);margin-left:8px}
+.day-start{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);font-weight:600;flex-shrink:0}
+.day-start input{width:90px;padding:6px 8px;border:1.5px solid var(--line);border-radius:8px;background:var(--paper-2);font-size:14px}
+
+.route{position:relative;padding-left:30px}
+.stop{position:relative;padding:6px 0}
+.stop::before{content:"";position:absolute;left:-23px;top:14px;width:13px;height:13px;border-radius:50%;background:#fff;border:3px solid var(--indigo)}
+.stop.spot .body{background:var(--paper-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.stop .arrive{font-size:11px;color:var(--muted);font-weight:600;margin-bottom:2px;letter-spacing:.5px}
+.stop .spot-name{font-size:14.5px;font-weight:700}
+.stop .ctrls{display:flex;gap:2px;flex-shrink:0}
+.icon-btn{width:30px;height:30px;border-radius:8px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--muted)}
+.icon-btn:active{background:var(--paper)}
+
+.stop.air::before{border-color:var(--indigo);background:var(--indigo)}
+.stop.air .body{background:var(--indigo);color:#fff;border:1px solid var(--indigo);border-radius:10px;padding:11px 13px;display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.stop.air .ap-name{font-size:14.5px;font-weight:700}
+.stop.air .ap-sub{font-size:11.5px;opacity:.82}
+.stop.air .ap-time{font-size:12px;font-weight:600;opacity:.96}
+.stop.air .warn-late,.warn-late{background:var(--warn);color:#fff;border-radius:6px;padding:4px 9px;font-size:11.5px;margin-top:5px;font-weight:600}
+.stop.home::before{border-color:var(--jr);background:var(--jr)}
+.stop.home .body{background:#16233b}
+.stay-row{font-size:11px;color:var(--muted);font-weight:600;margin-top:4px;display:flex;align-items:center;gap:4px}
+.stay-in{width:54px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px}
+.ap-leave{font-size:11.5px;opacity:.96;margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ap-leave input{padding:3px 7px;border:none;border-radius:6px;font-size:13px;background:rgba(255,255,255,.92);color:var(--ink);width:96px}
+.leave-reset{background:rgba(255,255,255,.2);color:#fff;border-radius:6px;padding:2px 8px;font-size:10.5px}
+.leave-auto{font-size:10.5px;opacity:.7}
+
+.leg{position:relative;margin:2px 0;padding:4px 0}
+.leg::before{content:"";position:absolute;left:-17.5px;top:-6px;bottom:-6px;width:3px;background:repeating-linear-gradient(var(--line),var(--line) 4px,transparent 4px,transparent 8px)}
+.leg-card{background:#fff;border:1px solid var(--line);border-left:4px solid var(--indigo);border-radius:8px;padding:9px 11px;font-size:12.5px}
+.leg-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
+.leg-dur{font-weight:700;font-size:13.5px}
+.leg-steps{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.line-chip{font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600}
+.pass-jr{background:var(--jr-bg);color:var(--jr)}
+.pass-no{background:var(--warn-bg);color:var(--warn)}
+.pass-check{background:var(--check-bg);color:var(--check)}
+.leg-demo{background:var(--check-bg);color:var(--check);border-radius:8px;padding:8px 11px;font-size:12px;border:1px dashed var(--check)}
+.calc-btn{background:var(--paper-2);border:1px dashed var(--indigo);color:var(--indigo);border-radius:8px;padding:7px 11px;font-size:12px;font-weight:600;width:100%}
+.leg-card .calc-btn{margin-top:6px}
+.leg-min{width:58px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--paper-2);font-size:13px;text-align:center}
+.leg-min-wrap{font-weight:700;font-size:13px}
+.leg-hint{font-size:11px;color:var(--check);margin-top:6px}
+.empty{text-align:center;color:var(--muted);font-size:13px;padding:20px 10px}
+
+.list-cat{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.list-cat-title{font-size:16px;color:var(--indigo)}
+.list-prog{font-size:12px;color:var(--muted);font-weight:700}
+.check-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+.check-row:last-of-type{border-bottom:none}
+.check-box{width:24px;height:24px;border-radius:7px;border:2px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700}
+.check-row.done .check-box{background:var(--jr);border-color:var(--jr)}
+.check-text{flex:1;font-size:14px}
+.check-row.done .check-text{text-decoration:line-through;color:var(--muted)}
+.check-del{color:var(--line);font-size:13px;width:26px;height:26px;border-radius:6px;flex-shrink:0}
+.check-del:active{color:var(--warn)}
+.add-row{display:flex;gap:8px;margin-top:12px}
+.add-input{flex:1;padding:9px 12px;border:1.5px dashed var(--line);border-radius:9px;background:var(--paper-2)}
+.add-input:focus{outline:none;border-color:var(--indigo)}
+.add-btn{width:42px;border-radius:9px;background:var(--indigo);color:#fff;font-size:18px;font-weight:700;flex-shrink:0}
+
+.bottombar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;z-index:30}
+.bottombar button{flex:1;padding:11px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;color:var(--muted);font-weight:600}
+.bottombar button.active{color:var(--indigo)}
+.bottombar button .ic{font-size:19px;line-height:1}
+
+.sheet-mask{position:fixed;inset:0;background:rgba(28,46,74,.35);z-index:40;display:flex;align-items:flex-end}
+.sheet{background:var(--card);width:100%;max-height:82vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 18px 28px}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sheet-head h3{margin:0;font-size:16px}
+.close-x{font-size:22px;color:var(--muted);width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.toast{position:fixed;bottom:78px;left:50%;transform:translateX(-50%);background:var(--indigo);color:#fff;padding:10px 18px;border-radius:999px;font-size:13px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:4px}
+.legend span{display:inline-flex;align-items:center;gap:4px}
+.dot{width:9px;height:9px;border-radius:2px;display:inline-block}
+</style>
+</head>
+<body>
+
+<!-- 登入 -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <div class="big-logo mincho">関</div>
+    <h2 class="mincho">関西旅程</h2>
+    <p class="tag">行程規劃 ・ 交通時間 ・ 行前清單</p>
+    <input id="codeInput" class="field" placeholder="輸入授權碼" autocomplete="off" />
+    <button class="btn" onclick="doLogin()">進入</button>
+    <div id="loginErr" class="err"></div>
+    <p class="login-note">請輸入您購買的授權碼登入。</p>
+  </div>
+</div>
+
+<!-- 主畫面 -->
+<div id="app" class="hidden">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo mincho">関</div>
+      <div><h1 class="mincho">関西旅程</h1><div class="sub" id="modeLabel">DEMO</div></div>
+    </div>
+    <div style="text-align:right">
+      <div class="pass-chip">JR 廣域 Pass</div>
+      <div id="saveStatus" class="save-status"></div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- 行程 -->
+    <div id="view-trip">
+      <div class="card">
+        <div class="eyebrow">行程資訊・航班</div>
+        <div class="grid2">
+          <div><label class="lbl">出發日期</label><input id="departDate" type="date" class="field" onchange="onSettingChange()" /></div>
+          <div><label class="lbl">回程日期</label><input id="returnDate" type="date" class="field" onchange="onSettingChange()" /></div>
+        </div>
+        <div id="tripLen" class="trip-len"></div>
+
+        <div class="sub-h">✈️ 去程（台灣 → 日本）</div>
+        <div class="grid2">
+          <div><label class="lbl">航空公司</label><select id="outAirline" class="field" onchange="onSettingChange()"></select></div>
+          <div><label class="lbl">出發機場（台）</label><select id="outFromAirport" class="field" onchange="onSettingChange()"></select></div>
+        </div>
+        <div class="grid2">
+          <div><label class="lbl">起飛時間（台）</label><input id="outDepartTime" type="time" class="field" value="08:00" onchange="onSettingChange()" /></div>
+          <div><label class="lbl">抵達時間（日）</label><input id="arriveTime" type="time" class="field" value="15:30" onchange="onSettingChange()" /></div>
+        </div>
+        <div class="grid2">
+          <div><label class="lbl">抵達機場（日）</label><select id="outToAirport" class="field" onchange="onSettingChange()"></select></div>
+          <div><label class="lbl">家→機場（分）</label><input id="homeToAirport" type="number" class="field" value="60" onchange="onSettingChange()" /></div>
+        </div>
+
+        <div class="sub-h">✈️ 回程（日本 → 台灣）</div>
+        <div class="grid2">
+          <div><label class="lbl">航空公司</label><select id="retAirline" class="field" onchange="onSettingChange()"></select></div>
+          <div><label class="lbl">出發機場（日）</label><select id="retFromAirport" class="field" onchange="onSettingChange()"></select></div>
+        </div>
+        <div class="grid2">
+          <div><label class="lbl">起飛時間</label><input id="departFlight" type="time" class="field" value="18:00" onchange="onSettingChange()" /></div>
+          <div><label class="lbl">抵達機場（台）</label><select id="retToAirport" class="field" onchange="onSettingChange()"></select></div>
+        </div>
+
+        <div class="sub-h">⏱ 緩衝時間</div>
+        <div class="grid2">
+          <div><label class="lbl">入境＋移動（分）</label><input id="entryBuffer" type="number" class="field" value="90" onchange="onSettingChange()" /></div>
+          <div><label class="lbl">報到提前（分）</label><input id="checkinBuffer" type="number" class="field" value="120" onchange="onSettingChange()" /></div>
+        </div>
+      </div>
+
+      <div id="dayContainer"></div>
+
+      <div class="card">
+        <div class="eyebrow">交通標示說明</div>
+        <div class="legend">
+          <span><i class="dot" style="background:var(--jr)"></i>可用 Pass</span>
+          <span><i class="dot" style="background:var(--warn)"></i>不可用</span>
+          <span><i class="dot" style="background:var(--check)"></i>請核對</span>
+        </div>
+        <p style="font-size:11.5px;color:var(--muted);margin:10px 0 0">JR Pass 為系統依路線名稱自動偵測，僅供參考，搭乘前請以車站或官方為準。</p>
+      </div>
+    </div>
+
+    <!-- 行前清單 -->
+    <div id="view-list" class="hidden">
+      <div class="card" style="background:var(--indigo);color:#fff;border:none">
+        <div class="eyebrow" style="color:rgba(255,255,255,.6)">行前準備</div>
+        <p style="margin:0;font-size:13px;opacity:.92">出發前一項一項打勾，狀態會自動存進你的帳號。</p>
+      </div>
+      <div id="listContainer"></div>
+    </div>
+
+    <!-- 設定 -->
+    <div id="view-set" class="hidden">
+      <div class="card">
+        <div class="eyebrow">授權碼</div>
+        <p style="font-size:13px;margin:0 0 10px">目前授權碼：<b id="curCode">—</b></p>
+        <label class="lbl">更新授權碼（4 大寫英文＋4 數字）</label>
+        <input id="newAuthInput" class="field" placeholder="例：KQWX5837" maxlength="8" autocomplete="off" />
+        <button class="btn small" onclick="changeCode()">更新授權碼</button>
+        <div id="changeCodeMsg" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+        <button class="btn ghost" style="margin-top:14px" onclick="logout()">登出</button>
+      </div>
+      <div class="card">
+        <div class="eyebrow">JR Pass</div>
+        <p style="font-size:13px;margin:0 0 6px">目前設定：<b>關西廣域版（Kansai WIDE Area Pass）</b></p>
+        <p style="font-size:11.5px;color:var(--muted);margin:0">涵蓋大阪・京都・神戶・鳥取的 JR 路線、山陽新幹線（新大阪↔岡山）、特急 Super Hakuto。地鐵／私鐵（阪急・阪神・近鐵）／公車不可用。</p>
+      </div>
+      <div class="card">
+        <div class="eyebrow">連線狀態</div>
+        <p id="statusGoogle" style="font-size:13px;margin:0 0 4px"></p>
+        <p id="statusFb" style="font-size:13px;margin:0 0 4px"></p>
+        <p id="statusCode" style="font-size:12px;color:var(--muted);margin:0"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottombar">
+    <button id="nav-trip" class="active" onclick="switchView('trip')"><span class="ic">🗓</span>行程</button>
+    <button id="nav-list" onclick="switchView('list')"><span class="ic">✅</span>清單</button>
+    <button id="nav-set" onclick="switchView('set')"><span class="ic">⚙</span>設定</button>
+  </div>
+</div>
+
+<div id="addSheet" class="sheet-mask hidden" onclick="if(event.target===this)closeAddSheet()">
+  <div class="sheet">
+    <div class="sheet-head"><h3 id="addTitle">加景點</h3><button class="close-x" onclick="closeAddSheet()">×</button></div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input id="searchInput" class="field" placeholder="搜尋景點名稱…" style="margin-bottom:0" />
+      <button class="btn small" style="flex-shrink:0" onclick="runSearch()">搜尋</button>
+    </div>
+    <div id="searchResults" style="margin-bottom:6px"></div>
+    <div class="city-tabs" id="cityTabs"></div>
+    <div class="spot-grid" id="spotGrid"></div>
+    <button class="btn" style="margin-top:14px" onclick="closeAddSheet()">完成</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* ============ 機場（含座標）============ */
+const AIRPORTS = {
+  TPE:{name:"桃園 TPE",lat:25.0777,lng:121.2328,tw:true},
+  TSA:{name:"松山 TSA",lat:25.0694,lng:121.5520,tw:true},
+  KHH:{name:"高雄 KHH",lat:22.5771,lng:120.3504,tw:true},
+  RMQ:{name:"台中 RMQ",lat:24.2647,lng:120.6212,tw:true},
+  KIX:{name:"關西 KIX",lat:34.4320,lng:135.2304,tw:false},
+  ITM:{name:"伊丹 ITM",lat:34.7855,lng:135.4380,tw:false},
+  UKB:{name:"神戶 UKB",lat:34.6328,lng:135.2240,tw:false}
+};
+const AIRLINES = ["長榮 BR","中華 CI","星宇 JX","台灣虎航 IT","樂桃 MM","日本航空 JL","全日空 NH","其他"];
+
+/* ============ 預設行前清單 ============ */
+const DEFAULT_CHECKLIST=[
+  {title:"證件・票券",items:[
+    {text:"護照（效期 6 個月以上）",done:false},{text:"JR Pass 兌換券",done:false},
+    {text:"電子機票 / 登機證",done:false},{text:"住宿訂房確認單",done:false},
+    {text:"日幣現金",done:false},{text:"信用卡（海外可用）",done:false}
+  ]},
+  {title:"電子用品",items:[
+    {text:"eSIM 或 WiFi 分享器",done:false},{text:"行動電源",done:false},
+    {text:"充電線・充電頭",done:false},{text:"萬用轉接頭",done:false}
+  ]},
+  {title:"行李・隨身",items:[
+    {text:"換洗衣物",done:false},{text:"常備藥品",done:false},
+    {text:"折疊雨傘",done:false},{text:"保暖外套（10 月鳥取偏涼）",done:false}
+  ]},
+  {title:"其他",items:[
+    {text:"旅遊平安險",done:false},{text:"緊急聯絡資料",done:false},{text:"離線地圖 / 翻譯 App",done:false}
+  ]}
+];
+
+/* ============ 狀態 ============ */
+const STATE = {
+  demo:true, code:null,
+  settings:{
+    departDate:"2026-10-15", returnDate:"2026-10-19",
+    outAirline:"長榮 BR", outFromAirport:"TPE", outToAirport:"KIX", outDepartTime:"08:00", arriveTime:"15:30", homeToAirport:60,
+    retAirline:"長榮 BR", retFromAirport:"KIX", retToAirport:"TPE", departFlight:"18:00",
+    entryBuffer:90, checkinBuffer:120
+  },
+  days:[],
+  checklist: JSON.parse(JSON.stringify(DEFAULT_CHECKLIST)),
+  pendingSpot:null
+};
+let MAPS_READY=false, FB_READY=false, dirService=null, placesService=null;
+const hasMapsKey = GOOGLE_MAPS_API_KEY && !GOOGLE_MAPS_API_KEY.startsWith("YOUR_");
+const hasFbKey   = FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.startsWith("YOUR_");
+const AUTH_KEY="jp_travel_auth";
+function saveLocalCode(c){ try{ localStorage.setItem(AUTH_KEY,c); }catch(e){} }
+function getLocalCode(){ try{ return localStorage.getItem(AUTH_KEY)||""; }catch(e){ return ""; } }
+function clearLocalCode(){ try{ localStorage.removeItem(AUTH_KEY); }catch(e){} }
+
+/* ============ 精選景點（座標為地理事實）============ */
+const SPOTS = {
+  "大阪":[
+    {n:"大阪城",lat:34.6873,lng:135.5259},{n:"道頓堀",lat:34.6687,lng:135.5013},
+    {n:"環球影城 USJ",lat:34.6654,lng:135.4323},{n:"海遊館",lat:34.6545,lng:135.4290},
+    {n:"通天閣・新世界",lat:34.6525,lng:135.5063},{n:"梅田藍天大廈",lat:34.7052,lng:135.4897}
+  ],
+  "京都":[
+    {n:"清水寺",lat:34.9949,lng:135.7850},{n:"伏見稻荷大社",lat:34.9671,lng:135.7727},
+    {n:"金閣寺",lat:35.0394,lng:135.7292},{n:"嵐山・竹林小徑",lat:35.0094,lng:135.6737},
+    {n:"祇園",lat:35.0036,lng:135.7750},{n:"二条城",lat:35.0142,lng:135.7481}
+  ],
+  "神戶":[
+    {n:"神戶港・馬賽克廣場",lat:34.6796,lng:135.1808},{n:"北野異人館",lat:34.7005,lng:135.1885},
+    {n:"南京町中華街",lat:34.6886,lng:135.1880},{n:"有馬溫泉",lat:34.7976,lng:135.2477},
+    {n:"明石海峽大橋・舞子",lat:34.6336,lng:135.0203},{n:"六甲山",lat:34.7783,lng:135.2622}
+  ],
+  "鳥取":[
+    {n:"鳥取砂丘",lat:35.5396,lng:134.2307},{n:"砂之美術館",lat:35.5378,lng:134.2289},
+    {n:"鳥取站",lat:35.4906,lng:134.2354},{n:"境港・水木茂之路",lat:35.5430,lng:133.2300},
+    {n:"青山剛昌故鄉館（柯南）",lat:35.4880,lng:133.7989},{n:"米子站",lat:35.4280,lng:133.3308}
+  ]
+};
+let activeCity="大阪";
+
+/* ============ 登入 ============ */
+function doLogin(){
+  const code=(document.getElementById("codeInput").value||"").trim();
+  const err=document.getElementById("loginErr");
+  if(!code){ err.textContent="請輸入授權碼"; return; }
+  if(!hasFbKey){ err.textContent="尚未設定 Firebase，請用下方示範模式，或部署後填入金鑰。"; return; }
+  err.textContent="驗證中…";
+  verifyCode(code).then(async ok=>{
+    if(ok){ STATE.demo=false; STATE.code=code; saveLocalCode(code); await loadData(code); startApp(); }
+    else { err.textContent="授權碼無效或已停用。"; }
+  }).catch(()=>{ err.textContent="連線失敗，請稍後再試。"; });
+}
+function enterDemo(){ STATE.demo=true; STATE.code=null; startApp(); }
+
+function startApp(){
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  document.getElementById("modeLabel").textContent = STATE.demo? "示範模式" : "已登入";
+  buildFlightSelects();
+  const s=STATE.settings;
+  const setv=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v; };
+  setv("departDate",s.departDate||""); setv("returnDate",s.returnDate||"");
+  setv("outAirline",s.outAirline); setv("outFromAirport",s.outFromAirport);
+  setv("outToAirport",s.outToAirport); setv("outDepartTime",s.outDepartTime); setv("arriveTime",s.arriveTime); setv("homeToAirport",s.homeToAirport);
+  setv("retAirline",s.retAirline); setv("retFromAirport",s.retFromAirport);
+  setv("retToAirport",s.retToAirport); setv("departFlight",s.departFlight);
+  setv("entryBuffer",s.entryBuffer); setv("checkinBuffer",s.checkinBuffer);
+  buildCityTabs(); renderSpots(); renderChecklist();
+  syncDays(); recompute(); updateStatus(); initSaveStatus();
+}
+
+function buildFlightSelects(){
+  const air=AIRLINES.map(a=>`<option value="${a}">${a}</option>`).join("");
+  const tw=Object.keys(AIRPORTS).filter(k=>AIRPORTS[k].tw).map(k=>`<option value="${k}">${AIRPORTS[k].name}</option>`).join("");
+  const jp=Object.keys(AIRPORTS).filter(k=>!AIRPORTS[k].tw).map(k=>`<option value="${k}">${AIRPORTS[k].name}</option>`).join("");
+  document.getElementById("outAirline").innerHTML=air;
+  document.getElementById("retAirline").innerHTML=air;
+  document.getElementById("outFromAirport").innerHTML=tw;
+  document.getElementById("retToAirport").innerHTML=tw;
+  document.getElementById("outToAirport").innerHTML=jp;
+  document.getElementById("retFromAirport").innerHTML=jp;
+}
+
+/* ============ 分頁 ============ */
+function switchView(v){
+  ["trip","list","set"].forEach(x=>{
+    document.getElementById("view-"+x).classList.toggle("hidden", x!==v);
+    document.getElementById("nav-"+x).classList.toggle("active", x===v);
+  });
+}
+
+/* ============ 天數 / 日期 ============ */
+function syncDays(){
+  const s=STATE.settings;
+  if(!s.departDate||!s.returnDate) return;
+  const a=new Date(s.departDate+"T00:00:00"), b=new Date(s.returnDate+"T00:00:00");
+  if(isNaN(a)||isNaN(b)||b<a) return;
+  const n=Math.round((b-a)/86400000)+1;
+  if(n<1||n>60) return;
+  while(STATE.days.length<n) STATE.days.push({items:[],start:"09:00"});
+  if(STATE.days.length>n) STATE.days.length=n;
+  STATE.days.forEach(d=>{ if(!d.items) d.items=[]; if(!d.start) d.start="09:00"; });
+}
+function dayDate(di){
+  const s=STATE.settings; if(!s.departDate) return null;
+  const d=new Date(s.departDate+"T00:00:00"); if(isNaN(d)) return null;
+  d.setDate(d.getDate()+di);
+  const w=["日","一","二","三","四","五","六"][d.getDay()];
+  return `${d.getMonth()+1}/${d.getDate()}（${w}）`;
+}
+function updateTripLen(){
+  const el=document.getElementById("tripLen"); if(!el) return;
+  const s=STATE.settings;
+  if(s.departDate&&s.returnDate&&STATE.days.length){
+    el.textContent=`共 ${STATE.days.length} 天　${dayDate(0)} – ${dayDate(STATE.days.length-1)}`;
+  } else { el.textContent="填入出發與回程日期，自動帶出每一天"; }
+}
+
+/* ============ 景點清單 ============ */
+function buildCityTabs(){
+  const c=document.getElementById("cityTabs"); c.innerHTML="";
+  Object.keys(SPOTS).forEach(city=>{
+    const b=document.createElement("button");
+    b.className="city-tab"+(city===activeCity?" active":""); b.textContent=city;
+    b.onclick=()=>{ activeCity=city; buildCityTabs(); renderSpots(); };
+    c.appendChild(b);
+  });
+}
+function renderSpots(){
+  const g=document.getElementById("spotGrid"); g.innerHTML="";
+  SPOTS[activeCity].forEach(s=>{
+    const b=document.createElement("button"); b.className="spot-btn";
+    b.innerHTML=`<span>${s.n}</span><span class="add">＋</span>`;
+    b.onclick=()=>addSpotToTarget({name:s.n,lat:s.lat,lng:s.lng});
+    g.appendChild(b);
+  });
+}
+
+/* ============ 搜尋 ============ */
+function runSearch(){
+  const q=(document.getElementById("searchInput").value||"").trim();
+  const box=document.getElementById("searchResults");
+  if(!q){ box.innerHTML=""; return; }
+  if(!MAPS_READY){
+    box.innerHTML=`<p class="leg-demo" style="margin-top:10px">示範模式：填入 Google Maps 金鑰後，這裡會顯示「${q}」的真實搜尋結果。你也可以先從下方精選清單挑。</p>`;
+    return;
+  }
+  box.innerHTML=`<p style="font-size:12px;color:var(--muted);padding:8px 0">搜尋中…</p>`;
+  placesService.textSearch({query:q,region:"jp"},(res,status)=>{
+    if(status!=="OK"||!res||!res.length){ box.innerHTML=`<p class="empty">查無結果</p>`; return; }
+    box.innerHTML="";
+    res.slice(0,6).forEach(p=>{
+      const row=document.createElement("div"); row.className="result-row";
+      row.innerHTML=`<div><div class="name">${p.name}</div><div class="addr">${p.formatted_address||""}</div></div>`;
+      const btn=document.createElement("button"); btn.className="btn small"; btn.textContent="加入";
+      btn.onclick=()=>addSpotToTarget({name:p.name,lat:p.geometry.location.lat(),lng:p.geometry.location.lng()});
+      row.appendChild(btn); box.appendChild(row);
+    });
+  });
+}
+
+/* ============ 選天數 ============ */
+let addTargetDay=null;
+function openAddSheet(di){
+  addTargetDay=di;
+  document.getElementById("addTitle").textContent=`加到 Day ${di+1}　${dayDate(di)||""}`;
+  const si=document.getElementById("searchInput"); if(si) si.value="";
+  const sr=document.getElementById("searchResults"); if(sr) sr.innerHTML="";
+  buildCityTabs(); renderSpots();
+  document.getElementById("addSheet").classList.remove("hidden");
+}
+function closeAddSheet(){ document.getElementById("addSheet").classList.add("hidden"); }
+function addSpotToTarget(spot){
+  if(addTargetDay==null || !STATE.days[addTargetDay]) return;
+  STATE.days[addTargetDay].items.push({...spot, stay:60});
+  resetDayRoutes(addTargetDay);
+  recompute(); scheduleSave();
+  toast(`已加入 Day ${addTargetDay+1}：${spot.name}`);
+}
+
+/* ============ 路線重置 ============ */
+function resetDayRoutes(di){
+  const day=STATE.days[di]; if(!day) return;
+  day.items.forEach(x=>{x._route=null;x._arrive=null;x._legMin=null});
+  day._airportInRoute=null; day._airportInMin=null; day._airportOutRoute=null; day._airportOutMin=null;
+}
+
+/* ============ 行程渲染 ============ */
+function legData(kind,di,ii){
+  const day=STATE.days[di];
+  if(kind==='spot'){ const it=day.items[ii]; return {min:it._legMin, route:it._route, calc:`calcLeg(${di},${ii})`, setMin:`setLegMin(${di},${ii},this.value)`}; }
+  if(kind==='in'){ return {min:day._airportInMin, route:day._airportInRoute, calc:`calcAirportLeg(${di},'in')`, setMin:`setAirportMin(${di},'in',this.value)`}; }
+  return {min:day._airportOutMin, route:day._airportOutRoute, calc:`calcAirportLeg(${di},'out')`, setMin:`setAirportMin(${di},'out',this.value)`};
+}
+function makeLeg(kind,di,ii){
+  const d=legData(kind,di,ii);
+  const leg=document.createElement("div"); leg.className="leg"; const inner=document.createElement("div");
+  const minVal = (d.min!=null? d.min : "");
+  let html=`<div class="leg-card">
+    <div class="leg-top"><span>🚆 交通</span>
+      <span class="leg-min-wrap">約 <input type="number" class="leg-min" value="${minVal}" placeholder="—" onchange="${d.setMin}"> 分</span></div>`;
+  if(d.route) html+=renderRouteDetail(d.route);
+  if(MAPS_READY) html+=`<button class="calc-btn" onclick="${d.calc}">用 Google 計算（自動帶入分鐘＋路線）</button>`;
+  else if(!d.route) html+=`<div class="leg-hint">示範：可手動填分鐘，或部署後用 Google 計算</div>`;
+  html+=`</div>`;
+  inner.innerHTML=html; leg.appendChild(inner); return leg;
+}
+function renderDays(){
+  const c=document.getElementById("dayContainer"); c.innerHTML="";
+  const s=STATE.settings, last=STATE.days.length-1;
+  if(!STATE.days.length){ c.innerHTML=`<div class="card"><div class="empty">在上方填入出發與回程日期，自動帶出每一天</div></div>`; return; }
+  STATE.days.forEach((day,di)=>{
+    const card=document.createElement("div"); card.className="card";
+    const dstr=dayDate(di);
+    const head=document.createElement("div"); head.className="day-head";
+    const startHtml = di>0 ? `<div class="day-start"><span>出發</span><input type="time" value="${day.start||"09:00"}" onchange="setDayStart(${di},this.value)"></div>` : "";
+    head.innerHTML=`<div><span class="day-tag mincho">Day ${di+1}</span>${dstr?`<span class="day-date">${dstr}</span>`:""}</div>${startHtml}`;
+    card.appendChild(head);
+
+    const route=document.createElement("div"); route.className="route";
+
+    // Day 1：從家出發 ＋ 去程抵達機場（虛擬・鎖定）
+    if(di===0){
+      const tw=AIRPORTS[s.outFromAirport], ap=AIRPORTS[s.outToAirport];
+      const home=document.createElement("div"); home.className="stop air home";
+      home.innerHTML=`<div class="body">
+        <div class="ap-name">🏠 建議 ${day._homeDepart||""} 從家出發</div>
+        <div class="ap-sub">${tw?tw.name:""} 報到（建議 ${day._twAirportArrive||""} 到）</div>
+        <div class="ap-time">${s.outAirline||""}　${s.outDepartTime} 起飛 → ${ap?ap.name:""}</div>
+      </div>`;
+      route.appendChild(home);
+      const st=document.createElement("div"); st.className="stop air";
+      const leaveCtrl = day.airportLeaveManual
+        ? `<button onclick="resetAirportLeave()" class="leave-reset">↺ 自動</button>`
+        : `<span class="leave-auto">(自動)</span>`;
+      st.innerHTML=`<div class="body">
+        <div class="ap-name">✈️ ${ap?ap.name:"抵達機場"}</div>
+        <div class="ap-sub">抵達 ${dstr||""} ${s.arriveTime}　入境＋移動 +${s.entryBuffer||0} 分</div>
+        <div class="ap-leave">離開機場 <input type="time" value="${day.airportLeave||""}" onchange="setAirportLeave(this.value)"> ${leaveCtrl}</div>
+      </div>`;
+      route.appendChild(st);
+      if(day.items.length) route.appendChild(makeLeg('in',di,0));
+    }
+
+    // 真實景點
+    day.items.forEach((it,ii)=>{
+      const stop=document.createElement("div"); stop.className="stop spot";
+      const arr=it._arrive?`<div class="arrive">⏱ 抵達 ${it._arrive}</div>`:"";
+      const stay=it.stay!=null?it.stay:60;
+      stop.innerHTML=`<div class="body"><div>${arr}<div class="spot-name">${it.name}</div>
+        <div class="stay-row">停留 <input type="number" class="stay-in" value="${stay}" onchange="setStay(${di},${ii},this.value)"> 分</div></div>
+        <div class="ctrls">
+          <button class="icon-btn" onclick="move(${di},${ii},-1)">↑</button>
+          <button class="icon-btn" onclick="move(${di},${ii},1)">↓</button>
+          <button class="icon-btn" onclick="del(${di},${ii})">✕</button>
+        </div></div>`;
+      route.appendChild(stop);
+      if(ii<day.items.length-1) route.appendChild(makeLeg('spot',di,ii));
+    });
+
+    // 回程出發機場（虛擬・鎖定，最後一天）
+    if(di===last && s.departFlight){
+      const ap=AIRPORTS[s.retFromAirport], tw=AIRPORTS[s.retToAirport];
+      if(day.items.length) route.appendChild(makeLeg('out',di,0));
+      const st=document.createElement("div"); st.className="stop air";
+      const warn = day._airportOutLate ? `<div class="warn-late">⚠️ 可能趕不上：順排約 ${day._airportOutForward} 才到機場</div>` : "";
+      st.innerHTML=`<div class="body">
+        <div class="ap-name">✈️ ${ap?ap.name:"出發機場"}</div>
+        <div class="ap-sub">${s.retAirline||""}　${ap?ap.name:""} → ${tw?tw.name:""}</div>
+        <div class="ap-time">建議 ${day._airportOutDeadline||""} 前抵達　回程 ${s.departFlight} 起飛（報到 +${s.checkinBuffer||0} 分）</div>
+        ${warn}
+      </div>`;
+      route.appendChild(st);
+    }
+
+    card.appendChild(route);
+    if(!day.items.length){
+      const e=document.createElement("div"); e.className="empty"; e.textContent="還沒有景點，按下方「＋ 加景點」";
+      card.appendChild(e);
+    }
+    const addBtn=document.createElement("button"); addBtn.className="btn ghost add-spot-btn"; addBtn.textContent="＋ 加景點"; addBtn.onclick=()=>openAddSheet(di);
+    card.appendChild(addBtn);
+    c.appendChild(card);
+  });
+}
+function renderRouteDetail(r){
+  const chips=r.steps.map(x=>{
+    const cls=x.pass==="jr"?"pass-jr":x.pass==="no"?"pass-no":"pass-check";
+    const ico=x.pass==="jr"?"✓Pass":x.pass==="no"?"自費":"?核對";
+    return `<span class="line-chip ${cls}">${x.label} · ${ico}</span>`;
+  }).join("");
+  return `<div style="font-size:11.5px;color:var(--muted);margin-top:4px">含轉乘緩衝 ${r.buffer} 分・${r.transfers} 次轉乘</div>
+    <div class="leg-steps">${chips}</div>`;
+}
+function setDayStart(di,val){ STATE.days[di].start=val||"09:00"; recompute(); scheduleSave(); }
+function setStay(di,ii,val){ STATE.days[di].items[ii].stay=Math.max(0,parseInt(val||"0",10)||0); recompute(); scheduleSave(); }
+function setAirportLeave(val){ const d=STATE.days[0]; if(!d) return; d.airportLeave=val||""; d.airportLeaveManual=true; recompute(); scheduleSave(); }
+function resetAirportLeave(){ const d=STATE.days[0]; if(!d) return; d.airportLeaveManual=false; recompute(); scheduleSave(); }
+function move(di,ii,dir){
+  const arr=STATE.days[di].items, j=ii+dir; if(j<0||j>=arr.length) return;
+  [arr[ii],arr[j]]=[arr[j],arr[ii]]; resetDayRoutes(di); recompute(); scheduleSave();
+}
+function del(di,ii){ STATE.days[di].items.splice(ii,1); resetDayRoutes(di); recompute(); scheduleSave(); }
+
+/* ============ 交通計算 ============ */
+function calcLeg(di,ii){
+  if(!MAPS_READY) return;
+  const day=STATE.days[di], a=day.items[ii], b=day.items[ii+1];
+  routeTransit({lat:a.lat,lng:a.lng},{lat:b.lat,lng:b.lng},r=>{ a._route=r; a._legMin=r.totalMin; recompute(); scheduleSave(); });
+}
+function calcAirportLeg(di,dir){
+  if(!MAPS_READY) return;
+  const day=STATE.days[di], s=STATE.settings;
+  let from,to;
+  if(dir==='in'){ const ap=AIRPORTS[s.outToAirport], it=day.items[0]; from={lat:ap.lat,lng:ap.lng}; to={lat:it.lat,lng:it.lng}; }
+  else { const ap=AIRPORTS[s.retFromAirport], it=day.items[day.items.length-1]; from={lat:it.lat,lng:it.lng}; to={lat:ap.lat,lng:ap.lng}; }
+  routeTransit(from,to,r=>{ if(dir==='in'){day._airportInRoute=r;day._airportInMin=r.totalMin;} else {day._airportOutRoute=r;day._airportOutMin=r.totalMin;} recompute(); scheduleSave(); });
+}
+function setLegMin(di,ii,val){ const v=val===""?null:Math.max(0,parseInt(val,10)||0); STATE.days[di].items[ii]._legMin=v; recompute(); scheduleSave(); }
+function setAirportMin(di,dir,val){ const v=val===""?null:Math.max(0,parseInt(val,10)||0); const d=STATE.days[di]; if(dir==='in') d._airportInMin=v; else d._airportOutMin=v; recompute(); scheduleSave(); }
+function routeTransit(origin,destination,cb){
+  dirService.route({origin,destination,travelMode:google.maps.TravelMode.TRANSIT},(res,status)=>{
+    if(status!=="OK"){ toast("這段查不到大眾運輸路線"); return; }
+    cb(parseRoute(res.routes[0].legs[0]));
+  });
+}
+function parseRoute(leg){
+  const BUFFER_PER_TRANSFER=5; const steps=[]; let transit=0;
+  leg.steps.forEach(s=>{
+    if(s.travel_mode==="TRANSIT"&&s.transit){
+      transit++;
+      const line=s.transit.line||{};
+      const agency=(line.agencies&&line.agencies[0]&&line.agencies[0].name)||"";
+      const name=line.name||line.short_name||agency||"電車";
+      steps.push({label:name,pass:classifyPass(name+" "+agency)});
+    }
+  });
+  const transfers=Math.max(transit-1,0);
+  return {steps,transfers,buffer:transfers*BUFFER_PER_TRANSFER,totalMin:Math.round((leg.duration?leg.duration.value:0)/60)+transfers*BUFFER_PER_TRANSFER};
+}
+function classifyPass(text){
+  const t=text.toLowerCase();
+  if(t.includes("hakuto")||t.includes("はくと")||t.includes("智頭")||t.includes("chizu")) return "jr";
+  if(t.includes("shinkansen")||t.includes("新幹線")) return "check";
+  if(/(subway|metro|地下鉄|地下鐵|阪急|hankyu|阪神|hanshin|近鉄|近鐵|kintetsu|南海|nankai|京阪|keihan|bus|バス|tram|市営)/.test(t)) return "no";
+  if(/(jr|japan rail|西日本旅客|west japan)/.test(t)) return "jr";
+  return "check";
+}
+
+/* ============ 時間軸 ============ */
+function onSettingChange(){
+  const s=STATE.settings, g=id=>document.getElementById(id).value;
+  s.departDate=g("departDate")||""; s.returnDate=g("returnDate")||"";
+  s.outAirline=g("outAirline"); s.outFromAirport=g("outFromAirport"); s.outToAirport=g("outToAirport"); s.outDepartTime=g("outDepartTime")||"08:00"; s.arriveTime=g("arriveTime")||"15:30"; s.homeToAirport=parseInt(g("homeToAirport")||"0",10)||0;
+  s.retAirline=g("retAirline"); s.retFromAirport=g("retFromAirport"); s.retToAirport=g("retToAirport"); s.departFlight=g("departFlight")||"";
+  s.entryBuffer=parseInt(g("entryBuffer")||"0",10)||0; s.checkinBuffer=parseInt(g("checkinBuffer")||"0",10)||0;
+  syncDays(); recompute(); scheduleSave();
+}
+function recompute(){
+  updateTripLen();
+  const s=STATE.settings, last=STATE.days.length-1;
+  STATE.days.forEach((day,di)=>{
+    let cur;
+    if(di===0){
+      const dep=toMin(s.outDepartTime), ci=s.checkinBuffer||0, h2a=s.homeToAirport||0;
+      day._twAirportArrive=fmt(dep-ci); day._homeDepart=fmt(dep-ci-h2a);
+      if(!day.airportLeaveManual) day.airportLeave=fmt(toMin(s.arriveTime)+(s.entryBuffer||0));
+      cur=toMin(day.airportLeave) + (day._airportInMin!=null? day._airportInMin:0);
+    }
+    else { cur=toMin(day.start||"09:00"); }
+    day.items.forEach((it,ii)=>{
+      it._arrive=fmt(cur);
+      cur += (it.stay!=null? it.stay : 60);
+      if(ii<day.items.length-1) cur += (it._legMin!=null? it._legMin:0);
+    });
+    if(di===last && s.departFlight){
+      let fwd=cur + (day.items.length && day._airportOutMin!=null? day._airportOutMin:0);
+      day._airportOutForward = day.items.length? fmt(fwd) : null;
+      const deadline=toMin(s.departFlight)-(s.checkinBuffer||0);
+      day._airportOutDeadline=fmt(deadline);
+      day._airportOutLate = !!(day.items.length && day._airportOutMin!=null && fwd>deadline);
+    }
+  });
+  renderDays();
+}
+function toMin(t){ const [h,m]=(t||"0:0").split(":").map(Number); return (h||0)*60+(m||0); }
+function fmt(m){ m=((m%1440)+1440)%1440; const h=Math.floor(m/60),mm=m%60; return String(h).padStart(2,"0")+":"+String(mm).padStart(2,"0"); }
+
+/* ============ 行前清單 ============ */
+function renderChecklist(){
+  const c=document.getElementById("listContainer"); c.innerHTML="";
+  STATE.checklist.forEach((cat,ci)=>{
+    const done=cat.items.filter(i=>i.done).length;
+    const card=document.createElement("div"); card.className="card";
+    card.innerHTML=`<div class="list-cat"><span class="list-cat-title mincho">${cat.title}</span><span class="list-prog">${done}/${cat.items.length}</span></div>`;
+    cat.items.forEach((it,ii)=>{
+      const row=document.createElement("div"); row.className="check-row"+(it.done?" done":"");
+      row.innerHTML=`<button class="check-box" onclick="toggleCheck(${ci},${ii})">${it.done?"✓":""}</button>
+        <span class="check-text">${it.text}</span>
+        <button class="check-del" onclick="delCheckItem(${ci},${ii})">✕</button>`;
+      card.appendChild(row);
+    });
+    const add=document.createElement("div"); add.className="add-row";
+    add.innerHTML=`<input class="add-input" id="addc-${ci}" placeholder="新增項目…" onkeydown="if(event.key==='Enter')addCheckItem(${ci})" />
+      <button class="add-btn" onclick="addCheckItem(${ci})">＋</button>`;
+    card.appendChild(add); c.appendChild(card);
+  });
+}
+function toggleCheck(ci,ii){ STATE.checklist[ci].items[ii].done=!STATE.checklist[ci].items[ii].done; renderChecklist(); scheduleSave(); }
+function addCheckItem(ci){ const el=document.getElementById("addc-"+ci); const v=(el.value||"").trim(); if(!v) return; STATE.checklist[ci].items.push({text:v,done:false}); renderChecklist(); scheduleSave(); }
+function delCheckItem(ci,ii){ STATE.checklist[ci].items.splice(ii,1); renderChecklist(); scheduleSave(); }
+
+/* ============ 狀態 / 提示 ============ */
+function updateStatus(){
+  document.getElementById("statusGoogle").innerHTML = MAPS_READY?"🟢 Google Maps：已連線":"🟡 Google Maps：未連線";
+  document.getElementById("statusFb").innerHTML = FB_READY?"🟢 Firebase：已連線":"🟡 Firebase：未連線";
+  const sc=document.getElementById("statusCode"); if(sc) sc.textContent = STATE.code?("授權碼："+STATE.code):"";
+  const cc=document.getElementById("curCode"); if(cc) cc.textContent = STATE.code||"—";
+}
+let toastT;
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),1600); }
+
+/* ============ Firebase 儲存 / 載入 ============ */
+let saveTimer=null;
+function initSaveStatus(){ setSaveStatus(STATE.demo?"示範・不儲存":(FB_READY?"已連線":"未連線")); }
+function setSaveStatus(t){ const el=document.getElementById("saveStatus"); if(el) el.textContent=t; }
+function scheduleSave(){
+  if(STATE.demo){ setSaveStatus("示範・不儲存"); return; }
+  if(!FB_READY||!STATE.code){ setSaveStatus("未連線"); return; }
+  setSaveStatus("儲存中…"); clearTimeout(saveTimer); saveTimer=setTimeout(saveData,800);
+}
+async function saveData(){
+  try{
+    const clean=JSON.parse(JSON.stringify({days:STATE.days,checklist:STATE.checklist,settings:STATE.settings,updatedAt:Date.now()}));
+    await firebase.firestore().collection("jpUserData").doc(STATE.code).set(clean);
+    setSaveStatus("已儲存 ✓");
+  }catch(e){ setSaveStatus("儲存失敗，稍後重試"); }
+}
+async function loadData(code){
+  try{
+    const snap=await firebase.firestore().collection("jpUserData").doc(code).get();
+    if(snap.exists){ const d=snap.data();
+      if(Array.isArray(d.days)) STATE.days=d.days;
+      if(Array.isArray(d.checklist)) STATE.checklist=d.checklist;
+      if(d.settings) STATE.settings=Object.assign(STATE.settings,d.settings);
+    }
+  }catch(e){}
+}
+
+/* ============ 授權碼驗證 ============ */
+async function verifyCode(code){
+  if(!FB_READY) return false;
+  const snap=await firebase.firestore().collection("jpAuthCodes").doc(code).get();
+  return snap.exists && snap.data().status==="active";
+}
+async function tryAutoLogin(){
+  const c=getLocalCode(); if(!c||!FB_READY) return;
+  try{ const ok=await verifyCode(c); if(ok){ STATE.demo=false; STATE.code=c; await loadData(c); startApp(); } }catch(e){}
+}
+function logout(){ clearLocalCode(); location.reload(); }
+async function changeCode(){
+  const el=document.getElementById('newAuthInput'); const nc=(el.value||'').trim().toUpperCase();
+  const msg=document.getElementById('changeCodeMsg');
+  if(!/^[A-Z]{4}[0-9]{4}$/.test(nc)){ msg.textContent='格式須為 4 大寫英文＋4 數字（例：KQWX5837）'; return; }
+  if(!FB_READY||!STATE.code){ msg.textContent='尚未連線'; return; }
+  if(nc===STATE.code){ msg.textContent='與目前授權碼相同'; return; }
+  msg.textContent='更新中…';
+  try{
+    const dbf=firebase.firestore();
+    const dup=await dbf.collection('jpAuthCodes').doc(nc).get();
+    if(dup.exists){ msg.textContent='這組碼已被使用，請換一組'; return; }
+    const oldCode=STATE.code;
+    const oldAuth=await dbf.collection('jpAuthCodes').doc(oldCode).get();
+    const userId=(oldAuth.exists && oldAuth.data().userId) || '';
+    await dbf.collection('jpAuthCodes').doc(nc).set({status:'active', userId});
+    const clean=JSON.parse(JSON.stringify({days:STATE.days,checklist:STATE.checklist,settings:STATE.settings,updatedAt:Date.now()}));
+    await dbf.collection('jpUserData').doc(nc).set(clean);
+    await dbf.collection('jpAuthCodes').doc(oldCode).delete();
+    await dbf.collection('jpUserData').doc(oldCode).delete();
+    STATE.code=nc; saveLocalCode(nc); el.value=''; msg.textContent='已更新為 '+nc; updateStatus();
+  }catch(e){ msg.textContent='更新失敗，請稍後再試'; }
+}
+
+/* ============ 載入外部 SDK ============ */
+function loadMaps(){
+  if(!hasMapsKey) return;
+  const s=document.createElement("script");
+  s.src=`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&language=zh-TW&region=JP&callback=__onMaps`;
+  s.async=true; document.head.appendChild(s);
+}
+window.__onMaps=function(){
+  dirService=new google.maps.DirectionsService();
+  placesService=new google.maps.places.PlacesService(document.createElement("div"));
+  MAPS_READY=true; updateStatus(); renderDays();
+};
+function loadFirebase(){
+  if(!hasFbKey) return;
+  const a=document.createElement("script"); a.src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js";
+  a.onload=()=>{ const b=document.createElement("script"); b.src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js";
+    b.onload=()=>{ firebase.initializeApp(FIREBASE_CONFIG); FB_READY=true; updateStatus(); tryAutoLogin(); };
+    document.head.appendChild(b); };
+  document.head.appendChild(a);
+}
+loadMaps(); loadFirebase();
+</script>
+</body>
+</html>
