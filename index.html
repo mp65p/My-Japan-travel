@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>関西旅程 ｜ 行程・交通・行前清單</title>
+<title>日本旅遊計畫 ｜ 行程・交通・行前清單</title>
 
 <!-- ============================================================
   🔑 設定區（部署時換成你自己的 key；沒填也能用「示範模式」看畫面）
@@ -67,6 +67,10 @@ label.lbl{font-size:12px;color:var(--muted);font-weight:600;display:block;margin
 .login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
 .login-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:30px 26px;max-width:380px;width:100%;text-align:center;box-shadow:0 18px 50px -28px rgba(28,46,74,.4)}
 .login-card .big-logo{width:62px;height:62px;border-radius:16px;margin:0 auto 16px;background:linear-gradient(135deg,var(--indigo),#0f5d3a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px}
+.travel-hero{position:relative;width:100%;height:124px;border-radius:16px;margin:0 auto 18px;overflow:hidden;background:linear-gradient(165deg,#2E5C8A 0%,#62A8CC 58%,#CDE8E3 100%);box-shadow:inset 0 -2px 10px rgba(28,46,74,.15)}
+.hero-sun{position:absolute;top:18px;right:30px;width:32px;height:32px;border-radius:50%;background:#FCE7AE;box-shadow:0 0 22px 7px rgba(252,231,174,.55)}
+.hero-mt{position:absolute;left:-6%;right:-6%;bottom:-2px;height:62px;background:linear-gradient(#EAF4F1,#FBF8F1);clip-path:polygon(0% 100%,37% 36%,46% 22%,54% 22%,63% 36%,100% 100%)}
+.hero-plane{position:absolute;top:30px;left:32px;width:44px;height:44px;transform:rotate(-20deg);filter:drop-shadow(0 3px 4px rgba(0,0,0,.25))}
 .login-card h2{margin:0 0 4px;font-size:21px}
 .login-card p.tag{margin:0 0 22px;color:var(--muted);font-size:13px}
 .divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:16px 0}
@@ -109,8 +113,42 @@ label.lbl{font-size:12px;color:var(--muted);font-weight:600;display:block;margin
 .stop.air .ap-sub{font-size:11.5px;opacity:.82}
 .stop.air .ap-time{font-size:12px;font-weight:600;opacity:.96}
 .stop.air .warn-late,.warn-late{background:var(--warn);color:#fff;border-radius:6px;padding:4px 9px;font-size:11.5px;margin-top:5px;font-weight:600}
-.stop.home::before{border-color:var(--jr);background:var(--jr)}
-.stop.home .body{background:#16233b}
+.stop.ap-item .body{background:var(--paper-2);border:1px solid var(--indigo-soft)}
+.stop.ap-item .spot-name{color:var(--indigo)}
+.ap-hint{font-size:11px;color:var(--indigo-soft);font-weight:600;margin-bottom:3px}
+.ap-hint.late{color:var(--warn)}
+.calc-icon{margin-left:6px;border:1px solid var(--line);background:#fff;color:var(--indigo);border-radius:6px;width:24px;height:24px;font-size:14px;line-height:1;cursor:pointer}
+.leg-hint2{font-size:11px;color:var(--check);margin:2px 0 4px}
+.quick-add{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.quick-add button{font-size:12px;padding:6px 10px;border:1px solid var(--indigo-soft);background:var(--paper-2);color:var(--indigo);border-radius:8px;font-weight:600}
+.leg-sum{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 10px;cursor:pointer}
+.leg-sum-txt{font-size:12px;color:var(--muted);font-weight:600}
+.leg-caret{font-size:12px;color:var(--muted)}
+.leg-card.open .leg-sum{border-bottom-left-radius:0;border-bottom-right-radius:0;background:var(--paper-2)}
+.leg-body{border:1px solid var(--line);border-top:none;border-radius:0 0 8px 8px;padding:10px;background:var(--paper-2)}
+.stop.spot .body{border-left-width:5px}
+.stop .spot-name{font-size:15.5px;font-weight:800}
+.stop.c-osaka .body{border-left-color:#2E6BB0}
+.stop.c-kyoto .body{border-left-color:#C0392B}
+.stop.c-kobe .body{border-left-color:#1C7A4E}
+.stop.c-tottori .body{border-left-color:#D2691E}
+.stop.c-air .body{border-left-color:var(--indigo)}
+.stop.c-home .body{border-left-color:#8a7d5a}
+.stop.c-other .body{border-left-color:var(--muted)}
+.mseg-line{min-width:96px}
+.map-open{width:100%;margin:0 0 12px}
+.map-view{position:fixed;inset:0;z-index:200;background:#fff;display:flex;flex-direction:column}
+.map-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--indigo);color:#fff}
+.map-title{font-weight:700;font-size:15px}
+.map-head .close-x{color:#fff}
+.map-canvas{flex:1;min-height:0}
+.map-strip{background:var(--paper-2);border-top:1px solid var(--line);padding:8px 10px;max-height:36vh;overflow-y:auto}
+.map-daytabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px}
+.map-daytab{flex-shrink:0;font-size:12px;font-weight:700;padding:5px 11px;border-radius:14px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+.map-daytab.on{color:#fff;border-color:transparent}
+.map-seq{font-size:12.5px;line-height:1.6;color:var(--ink)}
+.map-seq .num{display:inline-block;min-width:18px;height:18px;line-height:18px;text-align:center;border-radius:50%;color:#fff;font-size:11px;font-weight:700;margin-right:6px}
+.map-seq .leg-t{color:var(--muted);font-size:11.5px;margin:0 0 2px 24px}
 .stay-row{font-size:11px;color:var(--muted);font-weight:600;margin-top:4px;display:flex;align-items:center;gap:4px}
 .stay-in{width:54px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px}
 .ap-leave{font-size:11.5px;opacity:.96;margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -143,6 +181,7 @@ label.lbl{font-size:12px;color:var(--muted);font-weight:600;display:block;margin
 .rstep.walk{border-left-style:dotted}
 .rstep.train{border-left-color:var(--jr)}
 .rstep.bus{border-left-color:var(--warn)}
+.rstep.cable{border-left-color:var(--check)}
 .rmode{font-size:10.5px;font-weight:700;min-width:30px;color:var(--ink)}
 .rstep.walk .rmode{color:var(--muted)}
 .rtxt{font-size:12px;line-height:1.5;color:var(--ink)}
@@ -152,9 +191,20 @@ label.lbl{font-size:12px;color:var(--muted);font-weight:600;display:block;margin
 .alt-lbl{font-size:11px;color:var(--muted)}
 .alt-chip{font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid var(--line);background:#fff;color:var(--ink)}
 .alt-chip.on{border-color:var(--indigo);background:var(--paper-2);color:var(--indigo);font-weight:700}
-.note-row{display:flex;align-items:center;gap:6px;margin-top:7px;font-size:11.5px;color:var(--muted)}
-.note-in{flex:1;padding:4px 7px;border:1px solid var(--line);border-radius:6px;background:var(--paper-2);font-size:12px;color:var(--ink)}
+.note-row{display:flex;align-items:flex-start;gap:6px;margin-top:7px;font-size:11.5px;color:var(--muted)}
+.note-lbl{padding-top:6px;flex-shrink:0}
+.note-in{flex:1;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--paper-2);font-size:12px;color:var(--ink);font-family:inherit;resize:vertical;min-height:44px;line-height:1.5}
 .leg-none{background:var(--warn-bg);color:var(--warn);border:1px dashed var(--warn);border-radius:8px;padding:8px 10px;font-size:11.5px;margin-top:4px;line-height:1.55}
+.src-m{background:#EAEAF2;color:var(--indigo)}
+.gmap-btn{display:block;text-align:center;margin-top:8px;padding:8px;border-radius:8px;background:var(--indigo);color:#fff;font-size:12.5px;font-weight:700;text-decoration:none}
+.manual-box{margin-top:6px;display:flex;flex-direction:column;gap:6px}
+.mseg{display:flex;flex-wrap:wrap;align-items:center;gap:4px;background:var(--paper-2);border:1px solid var(--line);border-radius:8px;padding:6px}
+.mseg-mode{font-size:11px;padding:3px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink)}
+.mseg-in{flex:1;min-width:64px;font-size:12px;padding:4px 6px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink)}
+.mseg-min{width:48px;font-size:12px;padding:4px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);text-align:center}
+.mseg-ar{font-size:12px;color:var(--muted)}
+.mseg-del{font-size:12px;color:var(--warn);background:none;border:none;padding:2px 4px}
+.mseg-add{font-size:12px;color:var(--indigo);background:#fff;border:1px dashed var(--indigo);border-radius:8px;padding:7px;font-weight:700}
 .empty{text-align:center;color:var(--muted);font-size:13px;padding:20px 10px}
 
 .list-cat{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
@@ -195,13 +245,17 @@ label.lbl{font-size:12px;color:var(--muted);font-weight:600;display:block;margin
 <!-- 登入 -->
 <div id="loginScreen" class="login-screen">
   <div class="login-card">
-    <div class="big-logo mincho">関</div>
-    <h2 class="mincho">関西旅程</h2>
+    <div class="travel-hero">
+      <div class="hero-sun"></div>
+      <div class="hero-mt"></div>
+      <svg class="hero-plane" viewBox="0 0 24 24" fill="#fff"><path d="M22 12a1.3 1.3 0 0 0-1.3-1.3h-5.4L9.6 3.2H7.8l2.8 7.5H5.1L3.5 8.6H2.1l1.1 3.4-1.1 3.4h1.4l1.6-2.1h5.5L7.8 20.8h1.8l5.7-7.5h5.4A1.3 1.3 0 0 0 22 12z"/></svg>
+    </div>
+    <h2 class="mincho">日本旅遊計畫</h2>
     <p class="tag">行程規劃 ・ 交通時間 ・ 行前清單</p>
     <input id="codeInput" class="field" placeholder="輸入授權碼" autocomplete="off" />
-    <button class="btn" onclick="doLogin()">進入</button>
+    <button class="btn" onclick="doLogin()">開始規劃</button>
     <div id="loginErr" class="err"></div>
-    <p class="login-note">請輸入您購買的授權碼登入。</p>
+    <p class="login-note">請輸入您的授權碼登入。</p>
   </div>
 </div>
 
@@ -209,8 +263,8 @@ label.lbl{font-size:12px;color:var(--muted);font-weight:600;display:block;margin
 <div id="app" class="hidden">
   <div class="topbar">
     <div class="brand">
-      <div class="logo mincho">関</div>
-      <div><h1 class="mincho">関西旅程</h1><div class="sub" id="modeLabel">DEMO</div></div>
+      <div class="logo"><svg viewBox="0 0 24 24" width="17" height="17" fill="#fff"><path d="M22 12a1.3 1.3 0 0 0-1.3-1.3h-5.4L9.6 3.2H7.8l2.8 7.5H5.1L3.5 8.6H2.1l1.1 3.4-1.1 3.4h1.4l1.6-2.1h5.5L7.8 20.8h1.8l5.7-7.5h5.4A1.3 1.3 0 0 0 22 12z"/></svg></div>
+      <div><h1 class="mincho">日本旅遊計畫</h1><div class="sub" id="modeLabel">DEMO</div></div>
     </div>
     <div style="text-align:right">
       <div class="pass-chip">JR 廣域 Pass</div>
@@ -260,6 +314,7 @@ label.lbl{font-size:12px;color:var(--muted);font-weight:600;display:block;margin
         </div>
       </div>
 
+      <button class="btn map-open" onclick="openMapView()">🗺 在地圖上查看順路</button>
       <div id="dayContainer"></div>
 
       <div class="card">
@@ -307,6 +362,12 @@ label.lbl{font-size:12px;color:var(--muted);font-weight:600;display:block;margin
     </div>
   </div>
 
+  <div id="mapView" class="map-view hidden">
+    <div class="map-head"><span class="map-title">🗺 順路地圖</span><button class="close-x" onclick="closeMapView()">×</button></div>
+    <div id="mapCanvas" class="map-canvas"></div>
+    <div id="mapStrip" class="map-strip"></div>
+  </div>
+
   <div class="bottombar">
     <button id="nav-trip" class="active" onclick="switchView('trip')"><span class="ic">🗓</span>行程</button>
     <button id="nav-list" onclick="switchView('list')"><span class="ic">✅</span>清單</button>
@@ -318,10 +379,16 @@ label.lbl{font-size:12px;color:var(--muted);font-weight:600;display:block;margin
   <div class="sheet">
     <div class="sheet-head"><h3 id="addTitle">加景點</h3><button class="close-x" onclick="closeAddSheet()">×</button></div>
     <div style="display:flex;gap:8px;margin-bottom:10px">
-      <input id="searchInput" class="field" placeholder="搜尋景點名稱…" style="margin-bottom:0" />
+      <input id="searchInput" class="field" placeholder="輸入景點/飯店名稱…" style="margin-bottom:0" />
       <button class="btn small" style="flex-shrink:0" onclick="runSearch()">搜尋</button>
+      <button class="btn small" style="flex-shrink:0" onclick="addTypedName()">直接加入</button>
     </div>
     <div id="searchResults" style="margin-bottom:6px"></div>
+    <div class="quick-add">
+      <button onclick="addHome()">＋ 住家</button>
+      <button onclick="addAirportSpot('in')">＋ 抵達機場</button>
+      <button onclick="addAirportSpot('out')">＋ 出發機場</button>
+    </div>
     <div class="city-tabs" id="cityTabs"></div>
     <div class="spot-grid" id="spotGrid"></div>
     <button class="btn" style="margin-top:14px" onclick="closeAddSheet()">完成</button>
@@ -426,7 +493,7 @@ function enterDemo(){ STATE.demo=true; STATE.code=null; startApp(); }
 function startApp(){
   document.getElementById("loginScreen").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
-  document.getElementById("modeLabel").textContent = (STATE.demo? "示範模式" : "已登入")+" · v3";
+  document.getElementById("modeLabel").textContent = (STATE.demo? "示範模式" : "已登入")+" · v11";
   buildFlightSelects();
   const s=STATE.settings;
   const setv=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v; };
@@ -437,7 +504,34 @@ function startApp(){
   setv("retToAirport",s.retToAirport); setv("departFlight",s.departFlight);
   setv("entryBuffer",s.entryBuffer); setv("checkinBuffer",s.checkinBuffer);
   buildCityTabs(); renderSpots(); renderChecklist();
-  syncDays(); recompute(); updateStatus(); initSaveStatus();
+  syncDays(); seedAirports(); autofillBuiltin(); recompute(); updateStatus(); initSaveStatus();
+}
+function autofillBuiltin(){
+  STATE.days.forEach(day=>{
+    for(let i=0;i<day.items.length-1;i++){
+      const a=day.items[i], b=day.items[i+1];
+      if(!a._route){
+        const r=builtinRoute(a.name,b.name);
+        if(r){ a._route=r; if(r.totalMin!=null) a._legMin=r.totalMin; }
+      }
+    }
+  });
+}
+function seedAirports(){
+  const s=STATE.settings;
+  if(s._seededAirports || !STATE.days.length) return;
+  const apIn=AIRPORTS[s.outToAirport];
+  if(apIn && !STATE.days[0].items.some(x=>x._airport==='in')){
+    STATE.days[0].items.unshift({name:apIn.name,lat:apIn.lat,lng:apIn.lng,stay:(s.entryBuffer||0),_airport:'in'});
+  }
+  const last=STATE.days.length-1;
+  if(s.departFlight){
+    const apOut=AIRPORTS[s.retFromAirport];
+    if(apOut && !STATE.days[last].items.some(x=>x._airport==='out')){
+      STATE.days[last].items.push({name:apOut.name,lat:apOut.lat,lng:apOut.lng,stay:0,_airport:'out'});
+    }
+  }
+  s._seededAirports=true; scheduleSave();
 }
 
 function buildFlightSelects(){
@@ -508,26 +602,38 @@ function renderSpots(){
 }
 
 /* ============ 搜尋 ============ */
-function runSearch(){
+function addTypedName(){
+  const q=(document.getElementById("searchInput").value||"").trim();
+  if(!q) return;
+  addSpotToTarget({name:q});
+}
+async function runSearch(){
   const q=(document.getElementById("searchInput").value||"").trim();
   const box=document.getElementById("searchResults");
   if(!q){ box.innerHTML=""; return; }
-  if(!MAPS_READY){
-    box.innerHTML=`<p class="leg-demo" style="margin-top:10px">示範模式：填入 Google Maps 金鑰後，這裡會顯示「${q}」的真實搜尋結果。你也可以先從下方精選清單挑。</p>`;
-    return;
-  }
+  const manual=`<button class="btn small" style="margin-top:6px" onclick="addTypedName()">＋ 直接加入「${q}」</button>`;
   box.innerHTML=`<p style="font-size:12px;color:var(--muted);padding:8px 0">搜尋中…</p>`;
-  placesService.textSearch({query:q,region:"jp"},(res,status)=>{
-    if(status!=="OK"||!res||!res.length){ box.innerHTML=`<p class="empty">查無結果</p>`; return; }
+  if(!MAPS_READY || !(google.maps.places && google.maps.places.Place && google.maps.places.Place.searchByText)){
+    box.innerHTML=`<p class="empty">無法使用 Google 搜尋,可直接加入</p>${manual}`; return;
+  }
+  try{
+    const r=await google.maps.places.Place.searchByText({textQuery:q,fields:["displayName","location","formattedAddress"],region:"jp",maxResultCount:6});
+    const places=r&&r.places?r.places:[];
+    if(!places.length){ box.innerHTML=`<p class="empty">查無結果</p>${manual}`; return; }
     box.innerHTML="";
-    res.slice(0,6).forEach(p=>{
+    places.forEach(p=>{
+      const name=(p.displayName||q), addr=(p.formattedAddress||"");
+      const lat=p.location?p.location.lat():null, lng=p.location?p.location.lng():null;
       const row=document.createElement("div"); row.className="result-row";
-      row.innerHTML=`<div><div class="name">${p.name}</div><div class="addr">${p.formatted_address||""}</div></div>`;
+      row.innerHTML=`<div><div class="name">${name}</div><div class="addr">${addr}</div></div>`;
       const btn=document.createElement("button"); btn.className="btn small"; btn.textContent="加入";
-      btn.onclick=()=>addSpotToTarget({name:p.name,lat:p.geometry.location.lat(),lng:p.geometry.location.lng()});
+      btn.onclick=()=>addSpotToTarget(lat!=null?{name,lat,lng}:{name});
       row.appendChild(btn); box.appendChild(row);
     });
-  });
+    box.insertAdjacentHTML("beforeend",manual);
+  }catch(e){
+    box.innerHTML=`<p class="empty">搜尋失敗,可直接加入</p>${manual}`;
+  }
 }
 
 /* ============ 選天數 ============ */
@@ -544,13 +650,28 @@ function closeAddSheet(){ document.getElementById("addSheet").classList.add("hid
 function addSpotToTarget(spot){
   if(addTargetDay==null || !STATE.days[addTargetDay]) return;
   const di=addTargetDay, day=STATE.days[di];
-  day.items.push({...spot, stay:60});
+  const item={...spot, stay:(spot.stay!=null?spot.stay:60)};
+  let idx;
+  const lastIt=day.items[day.items.length-1];
+  if(item._home){ day.items.unshift(item); idx=0; }
+  else if(lastIt && lastIt._airport==='out'){ idx=day.items.length-1; day.items.splice(idx,0,item); }
+  else { idx=day.items.length; day.items.push(item); }
   recompute(); scheduleSave();
-  toast(`已加入 Day ${di+1}：${spot.name}`);
-  const n=day.items.length, last=STATE.days.length-1, s=STATE.settings;
-  if(di===0 && n===1) calcAirportLeg(0,'in');
-  if(n>=2) calcLeg(di,n-2);
-  if(di===last && s.departFlight) calcAirportLeg(di,'out');
+  toast(`已加入 Day ${di+1}：${item.name}`);
+  if(idx-1>=0) calcLeg(di,idx-1);
+  if(idx<day.items.length-1) calcLeg(di,idx);
+}
+function addHome(){
+  if(addTargetDay==null) return;
+  addSpotToTarget({name:"住家",_home:true,stay:0});
+  const day=STATE.days[addTargetDay];
+  if(day.items[0] && day.items[0]._home && STATE.settings.homeToAirport){ day.items[0]._legMin=STATE.settings.homeToAirport; recompute(); scheduleSave(); }
+}
+function addAirportSpot(dir){
+  if(addTargetDay==null) return;
+  const s=STATE.settings, ap=AIRPORTS[dir==='in'?s.outToAirport:s.retFromAirport];
+  if(!ap) return;
+  addSpotToTarget({name:ap.name,lat:ap.lat,lng:ap.lng,_airport:dir,stay:dir==='in'?(s.entryBuffer||0):0});
 }
 
 /* ============ 路線重置 ============ */
@@ -561,33 +682,115 @@ function resetDayRoutes(di){
 }
 
 /* ============ 行程渲染 ============ */
-function legData(kind,di,ii){
-  const day=STATE.days[di];
-  if(kind==='spot'){ const it=day.items[ii]; return {kind,di,ii,min:it._legMin, route:it._route, note:it._legNote||"", calc:`calcLeg(${di},${ii})`, setMin:`setLegMin(${di},${ii},this.value)`, setNote:`setLegNote('spot',${di},${ii},this.value)`}; }
-  if(kind==='in'){ return {kind,di,ii:0,min:day._airportInMin, route:day._airportInRoute, note:day._airportInNote||"", calc:`calcAirportLeg(${di},'in')`, setMin:`setAirportMin(${di},'in',this.value)`, setNote:`setLegNote('in',${di},0,this.value)`}; }
-  return {kind,di,ii:0,min:day._airportOutMin, route:day._airportOutRoute, note:day._airportOutNote||"", calc:`calcAirportLeg(${di},'out')`, setMin:`setAirportMin(${di},'out',this.value)`, setNote:`setLegNote('out',${di},0,this.value)`};
+function cityClass(it){
+  if(it._airport) return 'c-air'; if(it._home) return 'c-home';
+  const n=it.name||""; const has=a=>a.some(k=>n.indexOf(k)>=0);
+  if(has(['大阪','梅田','難波','道頓','通天','新世界','海遊','環球','USJ','心斎','天王寺'])) return 'c-osaka';
+  if(has(['京都','清水','伏見','稻荷','稲荷','金閣','嵐山','祇園','二条'])) return 'c-kyoto';
+  if(has(['神戶','神戸','三宮','北野','南京','有馬','舞子','明石','六甲','摩耶','布引','燦路都'])) return 'c-kobe';
+  if(has(['鳥取','砂丘','境港','米子','柯南','青山','由良','倉吉','三朝'])) return 'c-tottori';
+  return 'c-other';
 }
+function gmapUrl(from,to){
+  if(!from||!to) return "";
+  const o=(from.lat!=null&&from.lng!=null)?`${from.lat},${from.lng}`:encodeURIComponent(from.name||"");
+  const d=(to.lat!=null&&to.lng!=null)?`${to.lat},${to.lng}`:encodeURIComponent(to.name||"");
+  if(!o||!d) return "";
+  return `https://www.google.com/maps/dir/?api=1&origin=${o}&destination=${d}&travelmode=transit`;
+}
+function legData(kind,di,ii){
+  const day=STATE.days[di], s=STATE.settings;
+  if(kind==='spot'){ const it=day.items[ii], nx=day.items[ii+1]; return {kind,di,ii,min:it._legMin, route:it._route, note:it._legNote||"", gmap:gmapUrl(it,nx), calc:`calcLeg(${di},${ii})`, setMin:`setLegMin(${di},${ii},this.value)`, setNote:`setLegNote('spot',${di},${ii},this.value)`}; }
+  if(kind==='in'){ const ap=AIRPORTS[s.outToAirport]; return {kind,di,ii:0,min:day._airportInMin, route:day._airportInRoute, note:day._airportInNote||"", gmap:gmapUrl(ap,day.items[0]), calc:`calcAirportLeg(${di},'in')`, setMin:`setAirportMin(${di},'in',this.value)`, setNote:`setLegNote('in',${di},0,this.value)`}; }
+  const ap=AIRPORTS[s.retFromAirport]; return {kind,di,ii:0,min:day._airportOutMin, route:day._airportOutRoute, note:day._airportOutNote||"", gmap:gmapUrl(day.items[day.items.length-1],ap), calc:`calcAirportLeg(${di},'out')`, setMin:`setAirportMin(${di},'out',this.value)`, setNote:`setLegNote('out',${di},0,this.value)`};
+}
+const LINES=['JR神戶線','JR京都線','JR大阪環狀線','JR山陰本線','JR寶塚線','JR奈良線','大阪地下鐵 御堂筋線','大阪地下鐵 谷町線','大阪地下鐵 中央線','大阪地下鐵 四橋線','阪急電車','阪神電車','近鐵','南海電車','京阪電車','京都地下鐵','JR特急 遙(はるか)','JR特急 超級白兔(はくと)','神戶市巴士','京都市巴士','日丸/日交巴士','纜車/空中纜車'];
+function legSummary(r){
+  if(!r) return '約 — 分・待設定';
+  if(r.source==='manual'||r._auto) return r.totalMin!=null?`約${r.totalMin}分・手動`:'待補（站到站）';
+  const first=(r.steps||[]).find(s=>s.mode!=='walk');
+  return `約${r.totalMin!=null?r.totalMin:'—'}分・${first?first.line:'步行'}`;
+}
+function toggleLeg(di,ii){ const it=STATE.days[di].items[ii]; if(it) it._legOpen=!it._legOpen; renderDays(); }
 function makeLeg(kind,di,ii){
-  const d=legData(kind,di,ii);
+  const d=legData(kind,di,ii), r=d.route;
+  const it=STATE.days[di].items[ii], open=!!(it&&it._legOpen);
   const leg=document.createElement("div"); leg.className="leg"; const inner=document.createElement("div");
-  const minVal=(d.min!=null?d.min:"");
-  const r=d.route;
   let src="";
   if(r&&r.source==='google') src=`<span class="src src-g">Google</span>`;
-  else if(r&&r.source==='builtin') src=`<span class="src src-b">內建參考</span>`;
-  let html=`<div class="leg-card">
-    <div class="leg-top"><span>交通${src}</span>
-      <span class="leg-min-wrap">約 <input type="number" class="leg-min" value="${minVal}" placeholder="—" onchange="${d.setMin}"> 分</span></div>`;
-  if(r) html+=renderRouteDetail(r);
-  if(r&&r.alts&&r.alts.length>1){
-    const chips=r.alts.map((a,idx)=>`<button class="alt-chip${idx===(r._altIdx||0)?' on':''}" onclick="chooseAlt('${kind}',${di},${ii},${idx})">路線${idx+1}·${a.transfers===0?'直達':a.transfers+'轉'}·${a.totalMin}分</button>`).join("");
-    html+=`<div class="alt-row"><span class="alt-lbl">其他路線：</span>${chips}</div>`;
+  else if(r&&r.source==='builtin') src=`<span class="src src-b">內建</span>`;
+  else if(r&&r.source==='manual') src=`<span class="src src-m">手動</span>`;
+  let html=`<div class="leg-card${open?' open':''}">
+    <div class="leg-sum" onclick="toggleLeg(${di},${ii})"><span class="leg-sum-txt">🚆 ${legSummary(r)} ${src}</span><span class="leg-caret">${open?'⌃':'⌄'}</span></div>`;
+  if(open){
+    const minVal=(d.min!=null?d.min:"");
+    html+=`<div class="leg-body"><div class="leg-top"><span class="leg-min-wrap">約 <input type="number" class="leg-min" value="${minVal}" placeholder="—" onchange="${d.setMin}"> 分</span>${MAPS_READY?`<button class="calc-icon" title="重新整理交通" onclick="${d.calc}">↻</button>`:""}</div>`;
+    if(r&&(r.source==='google'||r.source==='builtin')){
+      html+=renderRouteDetail(r);
+      if(r.alts&&r.alts.length>1){
+        const chips=r.alts.map((a,idx)=>`<button class="alt-chip${idx===(r._altIdx||0)?' on':''}" onclick="chooseAlt('${kind}',${di},${ii},${idx})">路線${idx+1}·${a.transfers===0?'直達':a.transfers+'轉'}·${a.totalMin}分</button>`).join("");
+        html+=`<div class="alt-row"><span class="alt-lbl">其他路線：</span>${chips}</div>`;
+      }
+    } else {
+      if(r&&r._auto) html+=`<div class="leg-hint2">查無自動資料,請補站到站(或用 Google Maps 查)</div>`;
+      html+=manualEditor(kind,di,ii,r);
+    }
+    if(d.gmap) html+=`<a class="gmap-btn" href="${d.gmap}" target="_blank" rel="noopener">在 Google Maps 查這段</a>`;
+    html+=`<div class="note-row"><span class="note-lbl">備註</span><textarea class="note-in" rows="2" placeholder="可填寫／修正" onchange="${d.setNote}">${(d.note||'').replace(/</g,'&lt;')}</textarea></div></div>`;
   }
-  html+=`<div class="note-row">備註 <input class="note-in" value="${(d.note||'').replace(/"/g,'&quot;')}" placeholder="可填寫／修正" onchange="${d.setNote}"></div>`;
-  if(MAPS_READY) html+=`<button class="calc-btn" onclick="${d.calc}">${r?'重新用 Google 計算':'用 Google 計算（自動帶入分鐘＋路線）'}</button>`;
-  else if(!r) html+=`<div class="leg-hint">手動填分鐘，或部署後用 Google 計算</div>`;
   html+=`</div>`;
   inner.innerHTML=html; leg.appendChild(inner); return leg;
+}
+function manualEditor(kind,di,ii,r){
+  const steps=(r&&r.source==='manual'&&r.steps)?r.steps:[];
+  const rows=steps.map((s,idx)=>{
+    const inList=LINES.includes(s.line);
+    const opts=LINES.map(l=>`<option${s.line===l?' selected':''}>${l}</option>`).join("")+(s.line&&!inList?`<option selected>${s.line}</option>`:"")+`<option value="__c">＋自訂…</option>`;
+    const lineSel = s.mode==='walk'?'' : `<select class="mseg-in mseg-line" onchange="setManualSeg('${kind}',${di},${ii},${idx},'line',this.value)"><option value="">選線名…</option>${opts}</select>`;
+    return `<div class="mseg">
+    <select class="mseg-mode" onchange="setManualSeg('${kind}',${di},${ii},${idx},'mode',this.value)">
+      <option value="train"${s.mode==='train'?' selected':''}>電車</option>
+      <option value="bus"${s.mode==='bus'?' selected':''}>公車</option>
+      <option value="walk"${s.mode==='walk'?' selected':''}>走路</option>
+    </select>${lineSel}
+    <input class="mseg-in" placeholder="上車站" value="${(s.from||'').replace(/"/g,'&quot;')}" onchange="setManualSeg('${kind}',${di},${ii},${idx},'from',this.value)">
+    <span class="mseg-ar">→</span>
+    <input class="mseg-in" placeholder="下車站" value="${(s.to||'').replace(/"/g,'&quot;')}" onchange="setManualSeg('${kind}',${di},${ii},${idx},'to',this.value)">
+    <input class="mseg-min" type="number" placeholder="分" value="${s.mins!=null&&s.mins!==''?s.mins:''}" onchange="setManualSeg('${kind}',${di},${ii},${idx},'mins',this.value)">
+    <button class="mseg-del" onclick="delManualSeg('${kind}',${di},${ii},${idx})">✕</button>
+  </div>`;
+  }).join("");
+  return `<div class="manual-box">${rows}<button class="mseg-add" onclick="addManualSeg('${kind}',${di},${ii})">＋ 加一段（站到站）</button></div>`;
+}
+function ensureManual(kind,di,ii){
+  const ref=legRouteRef(kind,di,ii); let r=ref.get();
+  if(!r||r.source!=='manual'){ r={source:'manual',steps:[],transfers:0,buffer:0,totalMin:null}; ref.setR(r); }
+  return ref;
+}
+function recalcManual(r){
+  const tr=r.steps.filter(s=>s.mode!=='walk'); r.transfers=Math.max(tr.length-1,0);
+  let sum=0,has=false; r.steps.forEach(s=>{ if(s.mins!=null&&s.mins!==''){ sum+=Number(s.mins)||0; has=true; } });
+  r.totalMin=has?sum:null;
+}
+function addManualSeg(kind,di,ii){
+  const ref=ensureManual(kind,di,ii), r=ref.get();
+  r.steps.push({mode:'train',line:'',from:'',to:'',mins:'',pass:'no'});
+  recalcManual(r); ref.setM(r.totalMin); recompute(); scheduleSave();
+}
+function setManualSeg(kind,di,ii,idx,field,val){
+  const ref=legRouteRef(kind,di,ii), r=ref.get(); if(!r||!r.steps||!r.steps[idx]) return;
+  if(field==='line' && val==='__c'){ const c=prompt('輸入線名'); if(c==null){ recompute(); return; } val=c.trim(); }
+  if(field==='mins') r.steps[idx].mins=(val===''?'':Math.max(0,parseInt(val,10)||0));
+  else r.steps[idx][field]=val;
+  const s=r.steps[idx]; s.pass = (s.mode==='walk')?'no':classifyPass(s.line||'');
+  recalcManual(r); ref.setM(r.totalMin); recompute(); scheduleSave();
+}
+function delManualSeg(kind,di,ii,idx){
+  const ref=legRouteRef(kind,di,ii), r=ref.get(); if(!r||!r.steps) return;
+  r.steps.splice(idx,1);
+  if(!r.steps.length){ ref.setR({source:'none',steps:[],transfers:0,buffer:0,totalMin:null}); ref.setM(null); }
+  else { recalcManual(r); ref.setM(r.totalMin); }
+  recompute(); scheduleSave();
 }
 function renderDays(){
   const c=document.getElementById("dayContainer"); c.innerHTML="";
@@ -603,35 +806,16 @@ function renderDays(){
 
     const route=document.createElement("div"); route.className="route";
 
-    // Day 1：從家出發 ＋ 去程抵達機場（虛擬・鎖定）
-    if(di===0){
-      const tw=AIRPORTS[s.outFromAirport], ap=AIRPORTS[s.outToAirport];
-      const home=document.createElement("div"); home.className="stop air home";
-      home.innerHTML=`<div class="body">
-        <div class="ap-name">🏠 建議 ${day._homeDepart||""} 從家出發</div>
-        <div class="ap-sub">${tw?tw.name:""} 報到（建議 ${day._twAirportArrive||""} 到）</div>
-        <div class="ap-time">${s.outAirline||""}　${s.outDepartTime} 起飛 → ${ap?ap.name:""}</div>
-      </div>`;
-      route.appendChild(home);
-      const st=document.createElement("div"); st.className="stop air";
-      const leaveCtrl = day.airportLeaveManual
-        ? `<button onclick="resetAirportLeave()" class="leave-reset">↺ 自動</button>`
-        : `<span class="leave-auto">(自動)</span>`;
-      st.innerHTML=`<div class="body">
-        <div class="ap-name">✈️ ${ap?ap.name:"抵達機場"}</div>
-        <div class="ap-sub">抵達 ${dstr||""} ${s.arriveTime}　入境＋移動 +${s.entryBuffer||0} 分</div>
-        <div class="ap-leave">離開機場 <input type="time" value="${day.airportLeave||""}" onchange="setAirportLeave(this.value)"> ${leaveCtrl}</div>
-      </div>`;
-      route.appendChild(st);
-      if(day.items.length) route.appendChild(makeLeg('in',di,0));
-    }
-
-    // 真實景點
+    // 所有停留點（含機場/住家，均為一般可編輯卡）
     day.items.forEach((it,ii)=>{
-      const stop=document.createElement("div"); stop.className="stop spot";
+      const stop=document.createElement("div"); stop.className="stop spot "+cityClass(it)+(it._airport?" ap-item":"");
       const arr=it._arrive?`<div class="arrive">⏱ 抵達 ${it._arrive}</div>`:"";
       const stay=it.stay!=null?it.stay:60;
-      stop.innerHTML=`<div class="body"><div>${arr}<div class="spot-name">${it.name}</div>
+      let hint="";
+      if(it._airport==='in') hint=`<div class="ap-hint">航班抵達 ${s.arriveTime}　入境＋移動 +${s.entryBuffer||0} 分</div>`;
+      else if(it._airport==='out') hint=`<div class="ap-hint${day._airportOutLate?' late':''}">建議 ${day._airportOutDeadline||""} 前到機場　${s.departFlight||""} 起飛${day._airportOutLate?"（目前順排恐遲到）":""}</div>`;
+      const icon = it._airport?"✈️ ":(it._home?"🏠 ":"");
+      stop.innerHTML=`<div class="body"><div>${arr}${hint}<div class="spot-name">${icon}${it.name}</div>
         <div class="stay-row">停留 <input type="number" class="stay-in" value="${stay}" onchange="setStay(${di},${ii},this.value)"> 分</div></div>
         <div class="ctrls">
           <button class="icon-btn" onclick="move(${di},${ii},-1)">↑</button>
@@ -641,21 +825,6 @@ function renderDays(){
       route.appendChild(stop);
       if(ii<day.items.length-1) route.appendChild(makeLeg('spot',di,ii));
     });
-
-    // 回程出發機場（虛擬・鎖定，最後一天）
-    if(di===last && s.departFlight){
-      const ap=AIRPORTS[s.retFromAirport], tw=AIRPORTS[s.retToAirport];
-      if(day.items.length) route.appendChild(makeLeg('out',di,0));
-      const st=document.createElement("div"); st.className="stop air";
-      const warn = day._airportOutLate ? `<div class="warn-late">⚠️ 可能趕不上：順排約 ${day._airportOutForward} 才到機場</div>` : "";
-      st.innerHTML=`<div class="body">
-        <div class="ap-name">✈️ ${ap?ap.name:"出發機場"}</div>
-        <div class="ap-sub">${s.retAirline||""}　${ap?ap.name:""} → ${tw?tw.name:""}</div>
-        <div class="ap-time">建議 ${day._airportOutDeadline||""} 前抵達　回程 ${s.departFlight} 起飛（報到 +${s.checkinBuffer||0} 分）</div>
-        ${warn}
-      </div>`;
-      route.appendChild(st);
-    }
 
     card.appendChild(route);
     if(!day.items.length){
@@ -684,7 +853,7 @@ function renderRouteDetail(r){
       const pass=x.pass==='jr'?'jr':'no';
       const pcls=pass==='jr'?'pass-jr':'pass-no';
       const pico=pass==='jr'?'JR Pass 可用':'自費';
-      const mlabel=mode==='bus'?'公車':'電車';
+      const mlabel=mode==='bus'?'公車':mode==='cable'?'纜車':'電車';
       const seg=(x.from||x.to)?`${x.from||''} → ${x.to||''}　`:"";
       rows+=`<div class="rstep ${mode}"><span class="rmode">${mlabel}</span><span class="rtxt"><b>${line}</b><br>${seg}${x.mins!=null?'約'+x.mins+'分':''}<span class="line-chip ${pcls}">${pico}</span></span></div>`;
     }
@@ -730,7 +899,8 @@ function depTime(){
 }
 function resolveLeg(fromName,toName,from,to,ref){
   const apply=route=>{ ref.setR(route); if(route&&route.totalMin!=null) ref.setM(route.totalMin); recompute(); scheduleSave(); };
-  if(MAPS_READY && dirService){
+  const hasCoords = from&&to&&from.lat!=null&&from.lng!=null&&to.lat!=null&&to.lng!=null;
+  if(MAPS_READY && dirService && hasCoords){
     dirService.route({origin:from,destination:to,travelMode:google.maps.TravelMode.TRANSIT,transitOptions:{departureTime:depTime()},provideRouteAlternatives:true},(res,status)=>{
       if(status==="OK" && res.routes && res.routes.length){
         const parsed=res.routes.map(rt=>parseRoute(rt.legs[0]));
@@ -745,7 +915,7 @@ function resolveLeg(fromName,toName,from,to,ref){
 function applyFallback(fromName,toName,apply,status){
   const b=builtinRoute(fromName,toName);
   if(b){ apply(b); }
-  else { apply({source:'none',status:status,steps:[],transfers:0,buffer:0,totalMin:null}); }
+  else { apply({source:'manual',_auto:true,steps:[{mode:'train',line:'',from:'',to:'',mins:'',pass:'no'}],transfers:0,buffer:0,totalMin:null}); }
 }
 function chooseAlt(kind,di,ii,idx){
   const ref=legRouteRef(kind,di,ii), r=ref.get();
@@ -789,13 +959,46 @@ function builtinRoute(aName,bName){
   const train=(line,f,t,m,pass)=>({mode:'train',line:line,from:f,to:t,mins:m,pass:pass||'jr'});
   const bus=(line,f,t,m)=>({mode:'bus',line:line,from:f,to:t,mins:m,pass:'no'});
   const mk=(total,steps)=>({source:'builtin',steps:steps,transfers:Math.max(steps.filter(s=>s.mode!=='walk').length-1,0),buffer:0,totalMin:total});
+  const cb=(line,f,t,m)=>({mode:'cable',line:line,from:f,to:t,mins:m,pass:'no'});
+  const wk=(m)=>({mode:'walk',mins:m});
+  const pr=(x,y)=>(hk(a,x)&&hk(b,y))||(hk(a,y)&&hk(b,x));
+  // ===== 你的行程專屬站到站（參考、平日約略、非即時） =====
+  const _KIX=['KIX','關西','関西','機場','空港'];
+  const _VIA=['VIA INN','ヴィアイン','VIAINN','新大阪西'];
+  const _DOTON=['道頓堀','道頓崛','難波','なんば','心斎橋'];
+  const _SUN=['燦路都','Sunroute','ソプラ','燦路','Sopra'];
+  const _KITANO=['北野','異人館'];
+  const _HERB=['布引','香草','ハーブ','Herb'];
+  const _MAYA=['摩耶','掬星'];
+  const _PORT=['神戶港','神戸港','メリケン','ハーバーランド','馬賽克'];
+  const _SAN=['三宮站','三ノ宮駅','三宮駅','神戶三宮','神戸三宮'];
+  const _KURA=['倉吉'];
+  const _MISASA=['三朝','萬翠','万翠','藥師'];
+  const _CONAN=['青山剛昌','柯南','コナン','由良'];
+  const _TOT=['鳥取站','鳥取駅','鳥取'];
+  const _OSA=['大阪','梅田'];
+  if(pr(_KIX,_VIA)) return mk(55,[train('JR特急 遙(はるか)','關西空港站','新大阪站',50,'jr'),wk(5)]);
+  if(pr(_VIA,_DOTON)) return mk(22,[wk(5),train('大阪地下鐵 御堂筋線','新大阪站','難波站',12,'no'),wk(5)]);
+  if(pr(_VIA,_SUN)) return mk(38,[train('JR京都線','新大阪站','大阪站',4,'jr'),train('JR神戶線 新快速','大阪站','三宮站',22,'jr'),wk(8)]);
+  if(pr(_SUN,_KITANO)) return mk(15,[bus('神戶 City Loop 觀光巴士','三宮','北野異人館',10),wk(5)]);
+  if(pr(_KITANO,_HERB)) return mk(20,[wk(10),cb('神戶布引纜車','新神戶站','香草園山頂',10)]);
+  if(pr(_HERB,_MAYA)) return mk(60,[cb('布引纜車','香草園','新神戶站',10),bus('神戶市巴士 18系統','三宮','摩耶纜車下站',20),cb('摩耶纜車(ケーブル)','摩耶纜車下站','虹之站',5),cb('摩耶空中纜車(ロープウェー)','虹之站','星之站・掬星台',5)]);
+  if(pr(_MAYA,_SUN)) return mk(40,[cb('摩耶空中纜車＋纜車','掬星台','摩耶纜車下站',10),bus('神戶市巴士 18系統','摩耶纜車下站','三宮',20),wk(8)]);
+  if(pr(_SUN,_PORT)) return mk(13,[wk(13)]);
+  if(pr(_PORT,_SAN)) return mk(15,[wk(15)]);
+  if(pr(_SAN,_KURA)) return mk(160,[train('JR特急 超級白兔(はくと)','三宮站','倉吉站',160,'jr')]);
+  if(pr(_KURA,_MISASA)) return mk(28,[bus('日丸巴士 三朝線','倉吉站','三朝溫泉',25),wk(3)]);
+  if(pr(_MISASA,_CONAN)) return mk(52,[bus('日丸巴士 三朝線','三朝溫泉','倉吉站',25),train('JR山陰本線','倉吉站','由良站(柯南站)',12,'jr'),wk(15)]);
+  if(pr(_MISASA,_TOT)) return mk(52,[bus('日丸巴士 三朝線','三朝溫泉','倉吉站',25),train('JR山陰本線','倉吉站','鳥取站',27,'jr')]);
+  if(pr(_TOT,_OSA)) return mk(150,[train('JR特急 超級白兔(はくと)','鳥取站','大阪站',150,'jr')]);
+  // ===== 通用主幹（其餘景點） =====
   const OSAKA=['大阪','梅田','難波','道頓堀','通天閣','新世界','海遊館','環球','USJ','心斎橋','天王寺'];
   const KYOTO=['京都','清水','伏見','稻荷','稲荷','金閣','嵐山','祇園','二条'];
   const KOBE=['神戶','神戸','三宮','三ノ宮','北野','南京','有馬','舞子','明石','馬賽克','六甲'];
   const TOTTORI=['鳥取','砂丘','砂之','境港','米子','柯南','青山','由良','倉吉'];
   const isKIX=s=>hk(s,['KIX','關西','関西']);
   const isITM=s=>hk(s,['ITM','伊丹']);
-  const isUKB=s=>hk(s,['UKB','神戸空港','神戶 UKB']);
+  const isUKB=s=>hk(s,['UKB','神戶空港','神戶 UKB']);
   const cityOf=s=>hk(s,OSAKA)?'osaka':hk(s,KYOTO)?'kyoto':hk(s,KOBE)?'kobe':hk(s,TOTTORI)?'tottori':null;
   const pair=(x,y)=>(hk(a,x)&&hk(b,y))||(hk(a,y)&&hk(b,x));
   // 機場 → 市區
@@ -806,29 +1009,29 @@ function builtinRoute(aName,bName){
   if(ap){
     const c=cityOf(ap.o);
     if(ap.t==='KIX'){
-      if(c==='osaka') return mk(65,[train('JR 關空快速','關西空港駅','大阪市區',65,'jr')]);
-      if(c==='kyoto') return mk(78,[train('JR 特急 はるか','關西空港駅','京都駅',75,'jr')]);
+      if(c==='osaka') return mk(65,[train('JR關空快速','關西空港站','大阪市區',65,'jr')]);
+      if(c==='kyoto') return mk(78,[train('JR特急 遙(はるか)','關西空港站','京都站',75,'jr')]);
       if(c==='kobe')  return mk(68,[bus('關西空港利木津巴士','關西空港','三宮',65)]);
-      if(c==='tottori') return mk(205,[train('JR 特急 はるか','關西空港駅','新大阪',50,'jr'),train('JR 特急 スーパーはくと','大阪','鳥取',150,'jr')]);
+      if(c==='tottori') return mk(205,[train('JR特急 遙(はるか)','關西空港站','新大阪站',50,'jr'),train('JR特急 超級白兔(はくと)','大阪站','鳥取站',150,'jr')]);
     } else if(ap.t==='ITM'){
       if(c==='osaka') return mk(35,[bus('大阪單軌＋地鐵','伊丹空港','梅田',35)]);
       if(c==='kyoto') return mk(55,[bus('利木津巴士','伊丹空港','京都駅',55)]);
       if(c==='kobe')  return mk(40,[bus('利木津巴士','伊丹空港','三宮',40)]);
     } else if(ap.t==='UKB'){
-      if(c==='kobe')  return mk(20,[train('Port Liner','神戸空港','三宮',18,'no')]);
-      if(c==='osaka') return mk(45,[train('Port Liner','神戸空港','三宮',18,'no'),train('JR 神戸線 新快速','三ノ宮','大阪',22,'jr')]);
+      if(c==='kobe')  return mk(20,[train('Port Liner','神戶空港','三宮',18,'no')]);
+      if(c==='osaka') return mk(45,[train('Port Liner','神戶空港','三宮',18,'no'),train('JR神戶線 新快速','三宮站','大阪站',22,'jr')]);
     }
   }
   // 城市之間
-  if(pair(OSAKA,KYOTO)) return mk(33,[train('JR 京都線 新快速','大阪','京都',30,'jr')]);
-  if(pair(OSAKA,KOBE))  return mk(25,[train('JR 神戸線 新快速','大阪','三ノ宮',22,'jr')]);
-  if(pair(KYOTO,KOBE))  return mk(53,[train('JR 新快速','京都','三ノ宮',50,'jr')]);
-  if(pair(OSAKA,['鳥取'])||pair(['大阪'],['鳥取'])) return mk(155,[train('JR 特急 スーパーはくと','大阪','鳥取',150,'jr')]);
+  if(pair(OSAKA,KYOTO)) return mk(33,[train('JR京都線 新快速','大阪站','京都站',30,'jr')]);
+  if(pair(OSAKA,KOBE))  return mk(25,[train('JR神戶線 新快速','大阪站','三宮站',22,'jr')]);
+  if(pair(KYOTO,KOBE))  return mk(53,[train('JR新快速','京都站','三宮站',50,'jr')]);
+  if(pair(OSAKA,['鳥取'])||pair(['大阪'],['鳥取'])) return mk(155,[train('JR特急 超級白兔(はくと)','大阪站','鳥取站',150,'jr')]);
   // 在地接駁
-  if(pair(['鳥取站','鳥取駅','鳥取'],['砂丘','砂之美術館','砂の'])) return mk(25,[bus('日ノ丸/日交 砂丘線巴士','鳥取駅','鳥取砂丘',22)]);
-  if(hk(a,['六甲'])||hk(b,['六甲'])) return mk(45,[train('JR 神戸線','三ノ宮','六甲道',6,'jr'),bus('神戸市バス＋六甲ケーブル','六甲道','六甲山上',38)]);
-  if(pair(['有馬'],['三宮','三ノ宮','神戶','神戸','北野','南京'])) return mk(45,[bus('阪急/神姫巴士','三宮','有馬温泉',42)]);
-  if(pair(['境港','水木'],['米子','鳥取'])) return mk(50,[train('JR 境線','米子','境港',45,'jr')]);
+  if(pair(['鳥取站','鳥取駅','鳥取'],['砂丘','砂之美術館','砂の'])) return mk(25,[bus('日丸/日交 砂丘線巴士','鳥取站','鳥取砂丘',22)]);
+  if(hk(a,['六甲'])||hk(b,['六甲'])) return mk(45,[train('JR神戶線','三宮站','六甲道站',6,'jr'),bus('神戶市巴士＋六甲纜車','六甲道站','六甲山上',38)]);
+  if(pair(['有馬'],['三宮','三ノ宮','神戶','神戸','北野','南京'])) return mk(45,[bus('阪急/神姬巴士','三宮','有馬溫泉',42)]);
+  if(pair(['境港','水木'],['米子','鳥取'])) return mk(50,[train('JR境線','米子站','境港站',45,'jr')]);
   return null;
 }
 function classifyPass(text){
@@ -860,8 +1063,7 @@ function recompute(){
     if(di===0){
       const dep=toMin(s.outDepartTime), ci=s.checkinBuffer||0, h2a=s.homeToAirport||0;
       day._twAirportArrive=fmt(dep-ci); day._homeDepart=fmt(dep-ci-h2a);
-      if(!day.airportLeaveManual) day.airportLeave=fmt(toMin(s.arriveTime)+(s.entryBuffer||0));
-      cur=toMin(day.airportLeave) + (day._airportInMin!=null? day._airportInMin:0);
+      cur=toMin(s.arriveTime);
     }
     else { cur=toMin(day.start||"09:00"); }
     day.items.forEach((it,ii)=>{
@@ -870,11 +1072,10 @@ function recompute(){
       if(ii<day.items.length-1) cur += (it._legMin!=null? it._legMin:0);
     });
     if(di===last && s.departFlight){
-      let fwd=cur + (day.items.length && day._airportOutMin!=null? day._airportOutMin:0);
-      day._airportOutForward = day.items.length? fmt(fwd) : null;
       const deadline=toMin(s.departFlight)-(s.checkinBuffer||0);
       day._airportOutDeadline=fmt(deadline);
-      day._airportOutLate = !!(day.items.length && day._airportOutMin!=null && fwd>deadline);
+      const outIt=day.items.find(x=>x._airport==='out');
+      day._airportOutLate = !!(outIt && outIt._arrive && toMin(outIt._arrive)>deadline);
     }
   });
   renderDays();
@@ -983,6 +1184,70 @@ function loadMaps(){
   const s=document.createElement("script");
   s.src=`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&language=zh-TW&region=JP&callback=__onMaps`;
   s.async=true; document.head.appendChild(s);
+}
+/* ============ 順路地圖 ============ */
+let _map=null,_markers=[],_lines=[],_geocoder=null,_mapDay='all';
+const DAY_COLORS=['#2E6BB0','#C0392B','#1C7A4E','#D2691E','#7B4FA3','#0E7C86','#B5832B','#993355'];
+function dayColor(di){ return DAY_COLORS[di%DAY_COLORS.length]; }
+function openMapView(){
+  if(!MAPS_READY){ toast('地圖載入中,請稍候再試'); return; }
+  document.getElementById('mapView').classList.remove('hidden');
+  if(!_map){ _map=new google.maps.Map(document.getElementById('mapCanvas'),{center:{lat:34.7,lng:135.3},zoom:8,mapTypeControl:false,streetViewControl:false,fullscreenControl:false}); }
+  _mapDay='all';
+  document.getElementById('mapStrip').innerHTML='<p style="font-size:12px;color:var(--muted);padding:6px">定位景點中…</p>';
+  geocodeMissing(()=>{ renderMapStrip(); drawMap(); });
+}
+function closeMapView(){ document.getElementById('mapView').classList.add('hidden'); }
+function geocodeMissing(done){
+  if(!_geocoder) _geocoder=new google.maps.Geocoder();
+  const todo=[];
+  STATE.days.forEach(day=>day.items.forEach(it=>{ if((it.lat==null||it.lng==null)&&it.name) todo.push(it); }));
+  if(!todo.length){ done(); return; }
+  let i=0; const next=()=>{
+    if(i>=todo.length){ scheduleSave(); done(); return; }
+    const it=todo[i++];
+    _geocoder.geocode({address:it.name+' 日本',region:'jp'},(res,st)=>{
+      if(st==='OK'&&res&&res[0]){ const loc=res[0].geometry.location; it.lat=loc.lat(); it.lng=loc.lng(); }
+      setTimeout(next,130);
+    });
+  };
+  next();
+}
+function drawMap(){
+  _markers.forEach(m=>m.setMap(null)); _markers=[]; _lines.forEach(l=>l.setMap(null)); _lines=[];
+  const bounds=new google.maps.LatLngBounds(); let any=false;
+  STATE.days.forEach((day,di)=>{
+    if(_mapDay!=='all' && _mapDay!==di) return;
+    const path=[], col=dayColor(di);
+    day.items.forEach((it,ii)=>{
+      if(it.lat==null||it.lng==null) return;
+      const pos={lat:it.lat,lng:it.lng}; any=true; bounds.extend(pos); path.push(pos);
+      const mk=new google.maps.Marker({position:pos,map:_map,label:{text:String(ii+1),color:'#fff',fontSize:'11px',fontWeight:'700'},
+        icon:{path:google.maps.SymbolPath.CIRCLE,scale:13,fillColor:col,fillOpacity:1,strokeColor:'#fff',strokeWeight:2},title:`Day${di+1}-${ii+1} ${it.name}`});
+      _markers.push(mk);
+    });
+    if(path.length>1){ _lines.push(new google.maps.Polyline({path,map:_map,strokeColor:col,strokeOpacity:.85,strokeWeight:3})); }
+  });
+  if(any){ try{ _map.fitBounds(bounds,60);}catch(e){} }
+}
+function setMapDay(d){ _mapDay=d; renderMapStrip(); drawMap(); }
+function renderMapStrip(){
+  const el=document.getElementById('mapStrip');
+  let tabs=`<div class="map-daytabs"><button class="map-daytab${_mapDay==='all'?' on':''}" style="${_mapDay==='all'?'background:#333':''}" onclick="setMapDay('all')">全部</button>`;
+  STATE.days.forEach((d,di)=>{ tabs+=`<button class="map-daytab${_mapDay===di?' on':''}" style="${_mapDay===di?'background:'+dayColor(di):''}" onclick="setMapDay(${di})">Day${di+1}</button>`; });
+  tabs+=`</div>`;
+  let body=""; const showDays=_mapDay==='all'?STATE.days.map((d,i)=>i):[_mapDay];
+  showDays.forEach(di=>{
+    const day=STATE.days[di], col=dayColor(di);
+    body+=`<div class="map-seq"><div style="font-weight:700;color:${col};margin:4px 0">Day ${di+1}</div>`;
+    if(!day.items.length) body+=`<div style="color:var(--muted)">（無景點）</div>`;
+    day.items.forEach((it,ii)=>{
+      body+=`<div><span class="num" style="background:${col}">${ii+1}</span>${it.name}${(it.lat==null)?' <span style="color:#C24A2E">(定位失敗)</span>':''}</div>`;
+      if(ii<day.items.length-1){ const m=it._legMin; body+=`<div class="leg-t">↓ ${m!=null?'約 '+m+' 分':'—'}</div>`; }
+    });
+    body+=`</div>`;
+  });
+  el.innerHTML=tabs+body;
 }
 window.__onMaps=function(){
   dirService=new google.maps.DirectionsService();
