@@ -149,6 +149,7 @@ label.lbl{font-size:12px;color:var(--muted);font-weight:600;display:block;margin
 .map-seq{font-size:12.5px;line-height:1.6;color:var(--ink)}
 .map-seq .num{display:inline-block;min-width:18px;height:18px;line-height:18px;text-align:center;border-radius:50%;color:#fff;font-size:11px;font-weight:700;margin-right:6px}
 .map-seq .leg-t{color:var(--muted);font-size:11.5px;margin:0 0 2px 24px}
+.rtk{display:inline-block;margin-top:4px;font-size:11.5px;color:#8a5a00;background:#fff7e6;border:1px solid #f0dca8;border-radius:6px;padding:2px 7px;line-height:1.5}
 .stay-row{font-size:11px;color:var(--muted);font-weight:600;margin-top:4px;display:flex;align-items:center;gap:4px}
 .stay-in{width:54px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px}
 .ap-leave{font-size:11.5px;opacity:.96;margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -175,6 +176,9 @@ label.lbl{font-size:12px;color:var(--muted);font-weight:600;display:block;margin
 .src{font-size:10px;font-weight:700;padding:1px 6px;border-radius:5px;margin-left:5px}
 .src-g{background:var(--jr-bg);color:var(--jr)}
 .src-b{background:var(--check-bg);color:var(--check)}
+.src-edit{background:#fff3d6;color:#8a5a00;margin-left:4px}
+.to-manual{display:block;width:100%;margin:8px 0 0;padding:8px;border:1px dashed var(--line);border-radius:8px;background:#fff;color:var(--indigo);font-size:12.5px;font-weight:600}
+.mseg-done{display:block;width:100%;margin:8px 0 0;padding:10px;border:none;border-radius:8px;background:var(--indigo);color:#fff;font-size:13.5px;font-weight:700}
 .route-head{font-size:11px;color:var(--muted);margin:4px 0 6px}
 .route-steps{display:flex;flex-direction:column}
 .rstep{display:flex;gap:8px;align-items:flex-start;padding:5px 0 5px 10px;border-left:3px solid var(--line);margin-left:3px}
@@ -455,24 +459,25 @@ function clearLocalCode(){ try{ localStorage.removeItem(AUTH_KEY); }catch(e){} }
 /* ============ 精選景點（座標為地理事實）============ */
 const SPOTS = {
   "大阪":[
-    {n:"大阪城",lat:34.6873,lng:135.5259},{n:"道頓堀",lat:34.6687,lng:135.5013},
-    {n:"環球影城 USJ",lat:34.6654,lng:135.4323},{n:"海遊館",lat:34.6545,lng:135.4290},
-    {n:"通天閣・新世界",lat:34.6525,lng:135.5063},{n:"梅田藍天大廈",lat:34.7052,lng:135.4897}
+    {n:"大阪城",jp:"大阪城",lat:34.6873,lng:135.5259},{n:"道頓堀",jp:"道頓堀",lat:34.6687,lng:135.5013},
+    {n:"環球影城 USJ",jp:"ユニバーサル・スタジオ・ジャパン",lat:34.6654,lng:135.4323},{n:"海遊館",jp:"海遊館",lat:34.6545,lng:135.4290},
+    {n:"通天閣・新世界",jp:"通天閣",lat:34.6525,lng:135.5063},{n:"梅田藍天大廈",jp:"梅田スカイビル 空中庭園展望台",lat:34.7052,lng:135.4897}
   ],
   "京都":[
-    {n:"清水寺",lat:34.9949,lng:135.7850},{n:"伏見稻荷大社",lat:34.9671,lng:135.7727},
-    {n:"金閣寺",lat:35.0394,lng:135.7292},{n:"嵐山・竹林小徑",lat:35.0094,lng:135.6737},
-    {n:"祇園",lat:35.0036,lng:135.7750},{n:"二条城",lat:35.0142,lng:135.7481}
+    {n:"清水寺",jp:"清水寺",lat:34.9949,lng:135.7850},{n:"伏見稻荷大社",jp:"伏見稲荷大社",lat:34.9671,lng:135.7727},
+    {n:"金閣寺",jp:"金閣寺",lat:35.0394,lng:135.7292},{n:"嵐山・竹林小徑",jp:"嵐山 竹林の小径",lat:35.0094,lng:135.6737},
+    {n:"祇園",jp:"祇園",lat:35.0036,lng:135.7750},{n:"二条城",jp:"二条城",lat:35.0142,lng:135.7481}
   ],
   "神戶":[
-    {n:"神戶港・馬賽克廣場",lat:34.6796,lng:135.1808},{n:"北野異人館",lat:34.7005,lng:135.1885},
-    {n:"南京町中華街",lat:34.6886,lng:135.1880},{n:"有馬溫泉",lat:34.7976,lng:135.2477},
-    {n:"明石海峽大橋・舞子",lat:34.6336,lng:135.0203},{n:"六甲山",lat:34.7783,lng:135.2622}
+    {n:"神戶港・馬賽克廣場",jp:"神戸ハーバーランド モザイク",lat:34.6796,lng:135.1808},{n:"北野異人館",jp:"北野異人館街",lat:34.7005,lng:135.1885},
+    {n:"南京町中華街",jp:"南京町",lat:34.6886,lng:135.1880},{n:"有馬溫泉",jp:"有馬温泉",lat:34.7976,lng:135.2477},
+    {n:"明石海峽大橋・舞子",jp:"明石海峡大橋",lat:34.6336,lng:135.0203},{n:"六甲山",jp:"六甲山",lat:34.7783,lng:135.2622},
+    {n:"摩耶山・掬星台",jp:"摩耶山 掬星台",lat:34.7274,lng:135.2122},{n:"布引香草園",jp:"神戸布引ハーブ園",lat:34.7066,lng:135.1955}
   ],
   "鳥取":[
-    {n:"鳥取砂丘",lat:35.5396,lng:134.2307},{n:"砂之美術館",lat:35.5378,lng:134.2289},
-    {n:"鳥取站",lat:35.4906,lng:134.2354},{n:"境港・水木茂之路",lat:35.5430,lng:133.2300},
-    {n:"青山剛昌故鄉館（柯南）",lat:35.4880,lng:133.7989},{n:"米子站",lat:35.4280,lng:133.3308}
+    {n:"鳥取砂丘",jp:"鳥取砂丘",lat:35.5396,lng:134.2307},{n:"砂之美術館",jp:"砂の美術館",lat:35.5378,lng:134.2289},
+    {n:"鳥取站",jp:"鳥取駅",lat:35.4906,lng:134.2354},{n:"境港・水木茂之路",jp:"水木しげるロード",lat:35.5430,lng:133.2300},
+    {n:"青山剛昌故鄉館（柯南）",jp:"青山剛昌ふるさと館",lat:35.4880,lng:133.7989},{n:"米子站",jp:"米子駅",lat:35.4280,lng:133.3308}
   ]
 };
 let activeCity="大阪";
@@ -494,7 +499,7 @@ function enterDemo(){ STATE.demo=true; STATE.code=null; startApp(); }
 function startApp(){
   document.getElementById("loginScreen").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
-  document.getElementById("modeLabel").textContent = (STATE.demo? "示範模式" : "已登入")+" · v13";
+  document.getElementById("modeLabel").textContent = (STATE.demo? "示範模式" : "已登入")+" · v19";
   buildFlightSelects();
   const s=STATE.settings;
   const setv=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v; };
@@ -597,7 +602,7 @@ function renderSpots(){
   SPOTS[activeCity].forEach(s=>{
     const b=document.createElement("button"); b.className="spot-btn";
     b.innerHTML=`<span>${s.n}</span><span class="add">＋</span>`;
-    b.onclick=()=>addSpotToTarget({name:s.n,lat:s.lat,lng:s.lng});
+    b.onclick=()=>addSpotToTarget({name:s.n,jp:s.jp,lat:s.lat,lng:s.lng});
     g.appendChild(b);
   });
 }
@@ -606,7 +611,16 @@ function renderSpots(){
 function addTypedName(){
   const q=(document.getElementById("searchInput").value||"").trim();
   if(!q) return;
-  addSpotToTarget({name:q});
+  const item={name:q};
+  addSpotToTarget(item);
+  // 線上時自動定位，讓「在 Google Maps 查這段」精準落點
+  if(MAPS_READY){
+    try{ if(!_geocoder) _geocoder=new google.maps.Geocoder();
+      _geocoder.geocode({address:q+' 日本',region:'jp'},(res,st)=>{
+        if(st==='OK'&&res&&res[0]){ const loc=res[0].geometry.location; item.lat=loc.lat(); item.lng=loc.lng(); recompute(); scheduleSave(); }
+      });
+    }catch(e){}
+  }
 }
 async function runSearch(){
   const q=(document.getElementById("searchInput").value||"").trim();
@@ -695,18 +709,19 @@ function cityClass(it){
 }
 function gmapUrl(from,to){
   if(!from||!to) return "";
-  const o=(from.lat!=null&&from.lng!=null)?`${from.lat},${from.lng}`:encodeURIComponent(from.name||"");
-  const d=(to.lat!=null&&to.lng!=null)?`${to.lat},${to.lng}`:encodeURIComponent(to.name||"");
+  const pick=p=>(p.lat!=null&&p.lng!=null)?`${p.lat},${p.lng}`:encodeURIComponent(p.jp||p.name||"");
+  const o=pick(from), d=pick(to);
   if(!o||!d) return "";
   return `https://www.google.com/maps/dir/?api=1&origin=${o}&destination=${d}&travelmode=transit`;
 }
 function legData(kind,di,ii){
   const day=STATE.days[di], s=STATE.settings;
-  if(kind==='spot'){ const it=day.items[ii], nx=day.items[ii+1]; return {kind,di,ii,min:it._legMin, route:it._route, note:it._legNote||"", gmap:gmapUrl(it,nx), calc:`calcLeg(${di},${ii})`, setMin:`setLegMin(${di},${ii},this.value)`, setNote:`setLegNote('spot',${di},${ii},this.value)`}; }
-  if(kind==='in'){ const ap=AIRPORTS[s.outToAirport]; return {kind,di,ii:0,min:day._airportInMin, route:day._airportInRoute, note:day._airportInNote||"", gmap:gmapUrl(ap,day.items[0]), calc:`calcAirportLeg(${di},'in')`, setMin:`setAirportMin(${di},'in',this.value)`, setNote:`setLegNote('in',${di},0,this.value)`}; }
-  const ap=AIRPORTS[s.retFromAirport]; return {kind,di,ii:0,min:day._airportOutMin, route:day._airportOutRoute, note:day._airportOutNote||"", gmap:gmapUrl(day.items[day.items.length-1],ap), calc:`calcAirportLeg(${di},'out')`, setMin:`setAirportMin(${di},'out',this.value)`, setNote:`setLegNote('out',${di},0,this.value)`};
+  if(kind==='spot'){ const it=day.items[ii], nx=day.items[ii+1]; return {kind,di,ii,min:it._legMin, route:it._route, note:it._legNote||"", gmap:gmapUrl(it,nx), calc:`recalcLeg('spot',${di},${ii})`, setMin:`setLegMin(${di},${ii},this.value)`, setNote:`setLegNote('spot',${di},${ii},this.value)`}; }
+  if(kind==='in'){ const ap=AIRPORTS[s.outToAirport]; return {kind,di,ii:0,min:day._airportInMin, route:day._airportInRoute, note:day._airportInNote||"", gmap:gmapUrl(ap,day.items[0]), calc:`recalcLeg('in',${di},0)`, setMin:`setAirportMin(${di},'in',this.value)`, setNote:`setLegNote('in',${di},0,this.value)`}; }
+  const ap=AIRPORTS[s.retFromAirport]; return {kind,di,ii:0,min:day._airportOutMin, route:day._airportOutRoute, note:day._airportOutNote||"", gmap:gmapUrl(day.items[day.items.length-1],ap), calc:`recalcLeg('out',${di},0)`, setMin:`setAirportMin(${di},'out',this.value)`, setNote:`setLegNote('out',${di},0,this.value)`};
 }
-const LINES=['JR神戶線','JR京都線','JR大阪環狀線','JR山陰本線','JR寶塚線','JR奈良線','大阪地下鐵 御堂筋線','大阪地下鐵 谷町線','大阪地下鐵 中央線','大阪地下鐵 四橋線','阪急電車','阪神電車','近鐵','南海電車','京阪電車','京都地下鐵','JR特急 遙(はるか)','JR特急 超級白兔(はくと)','神戶市巴士','京都市巴士','日丸/日交巴士','纜車/空中纜車'];
+const LINES=['JR神戶線','JR京都線','JR大阪環狀線','JR山陰本線','JR嵯峨野線(山陰本線)','JR奈良線','JR寶塚線','JRゆめ咲線','JR境線','JR特急 遙(はるか)','JR特急 超級白兔(はくと)','智頭急行','大阪地下鐵 御堂筋線','大阪地下鐵 谷町線','大阪地下鐵 中央線','大阪地下鐵 四橋線','京都地下鐵 烏丸線','京都地下鐵 東西線','阪急電車','阪神電車','近鐵','南海電車','京阪電車','Port Liner','神戶 City Loop 觀光巴士','神戶市巴士 18系統','京都市巴士','日丸巴士 三朝線','日丸/日交 砂丘線巴士','摩耶纜車(ケーブル)','摩耶空中纜車(ロープウェー)','布引纜車','六甲纜車','Captain Line 渡船'];
+const STATIONS=['大阪站(梅田)','新大阪站','難波站','心斎橋站','本町站','大阪港站','大阪城公園站','谷町四丁目站','天王寺站','動物園前站','西九条站','環球城站(USJ)','關西空港站','京都站','稻荷站','嵯峨嵐山站','烏丸御池站','二条城前站','清水五条站','祇園四条站','金閣寺道','五条坂','三宮站','新神戶站','元町站','六甲道站','舞子站','有馬溫泉站','摩耶纜車下站','掬星台','香草園山麓站','神戶空港站','倉吉站','三朝溫泉','鳥取站','由良站(柯南站)','米子站','境港站','鳥取砂丘','白兔神社前'];
 function legSummary(r){
   if(!r) return '約 — 分・待設定';
   if(r.source==='manual'||r._auto) return r.totalMin!=null?`約${r.totalMin}分・手動`:'待補（站到站）';
@@ -723,16 +738,17 @@ function makeLeg(kind,di,ii){
   else if(r&&r.source==='builtin') src=`<span class="src src-b">內建</span>`;
   else if(r&&r.source==='manual') src=`<span class="src src-m">手動</span>`;
   let html=`<div class="leg-card${open?' open':''}">
-    <div class="leg-sum" onclick="toggleLeg(${di},${ii})"><span class="leg-sum-txt">🚆 ${legSummary(r)} ${src}</span><span class="leg-caret">${open?'⌃':'⌄'}</span></div>`;
+    <div class="leg-sum" onclick="toggleLeg(${di},${ii})"><span class="leg-sum-txt">🚆 ${legSummary(r)} ${src}${r&&r._userEdited?'<span class="src src-edit">已自訂</span>':''}</span><span class="leg-caret">${open?'⌃':'⌄'}</span></div>`;
   if(open){
     const minVal=(d.min!=null?d.min:"");
-    html+=`<div class="leg-body"><div class="leg-top"><span class="leg-min-wrap">約 <input type="number" class="leg-min" value="${minVal}" placeholder="—" onchange="${d.setMin}"> 分</span>${MAPS_READY?`<button class="calc-icon" title="重新整理交通" onclick="${d.calc}">↻</button>`:""}</div>`;
+    html+=`<div class="leg-body"><div class="leg-top"><span class="leg-min-wrap">約 <input type="number" class="leg-min" value="${minVal}" placeholder="—" onchange="${d.setMin}"> 分</span>${MAPS_READY?`<button class="calc-icon" title="重新套用內建路線" onclick="${d.calc}">↻</button>`:""}</div>`;
     if(r&&(r.source==='google'||r.source==='builtin')){
       html+=renderRouteDetail(r);
       if(r.alts&&r.alts.length>1){
         const chips=r.alts.map((a,idx)=>`<button class="alt-chip${idx===(r._altIdx||0)?' on':''}" onclick="chooseAlt('${kind}',${di},${ii},${idx})">路線${idx+1}·${a.transfers===0?'直達':a.transfers+'轉'}·${a.totalMin}分</button>`).join("");
         html+=`<div class="alt-row"><span class="alt-lbl">其他路線：</span>${chips}</div>`;
       }
+      html+=`<button class="to-manual" onclick="toManual('${kind}',${di},${ii})">✎ 改成自己填（複製此路線再修改）</button>`;
     } else {
       if(r&&r._auto) html+=`<div class="leg-hint2">查無自動資料,請補站到站(或用 Google Maps 查)</div>`;
       html+=manualEditor(kind,di,ii,r);
@@ -745,24 +761,25 @@ function makeLeg(kind,di,ii){
 }
 function manualEditor(kind,di,ii,r){
   const steps=(r&&r.source==='manual'&&r.steps)?r.steps:[];
+  const stOpts=(cur)=>STATIONS.map(s=>`<option${cur===s?' selected':''}>${s}</option>`).join("")+((cur&&!STATIONS.includes(cur))?`<option selected>${cur}</option>`:"")+`<option value="__c">＋自訂…</option>`;
   const rows=steps.map((s,idx)=>{
-    const inList=LINES.includes(s.line);
+    const inList=LINES.includes(s.line), isWalk=s.mode==='walk';
     const opts=LINES.map(l=>`<option${s.line===l?' selected':''}>${l}</option>`).join("")+(s.line&&!inList?`<option selected>${s.line}</option>`:"")+`<option value="__c">＋自訂…</option>`;
-    const lineSel = s.mode==='walk'?'' : `<select class="mseg-in mseg-line" onchange="setManualSeg('${kind}',${di},${ii},${idx},'line',this.value)"><option value="">選線名…</option>${opts}</select>`;
+    const lineSel = isWalk?'' : `<select class="mseg-in mseg-line" onchange="setManualSeg('${kind}',${di},${ii},${idx},'line',this.value)"><option value="">選線名…</option>${opts}</select>`;
+    const fromSel = isWalk?'' : `<select class="mseg-in" onchange="setManualSeg('${kind}',${di},${ii},${idx},'from',this.value)"><option value="">上車站…</option>${stOpts(s.from)}</select>`;
+    const toSel = isWalk?'' : `<select class="mseg-in" onchange="setManualSeg('${kind}',${di},${ii},${idx},'to',this.value)"><option value="">下車站…</option>${stOpts(s.to)}</select>`;
+    const arrow = isWalk?'' : `<span class="mseg-ar">→</span>`;
     return `<div class="mseg">
     <select class="mseg-mode" onchange="setManualSeg('${kind}',${di},${ii},${idx},'mode',this.value)">
       <option value="train"${s.mode==='train'?' selected':''}>電車</option>
       <option value="bus"${s.mode==='bus'?' selected':''}>公車</option>
       <option value="walk"${s.mode==='walk'?' selected':''}>走路</option>
-    </select>${lineSel}
-    <input class="mseg-in" placeholder="上車站" value="${(s.from||'').replace(/"/g,'&quot;')}" onchange="setManualSeg('${kind}',${di},${ii},${idx},'from',this.value)">
-    <span class="mseg-ar">→</span>
-    <input class="mseg-in" placeholder="下車站" value="${(s.to||'').replace(/"/g,'&quot;')}" onchange="setManualSeg('${kind}',${di},${ii},${idx},'to',this.value)">
+    </select>${lineSel}${fromSel}${arrow}${toSel}
     <input class="mseg-min" type="number" placeholder="分" value="${s.mins!=null&&s.mins!==''?s.mins:''}" onchange="setManualSeg('${kind}',${di},${ii},${idx},'mins',this.value)">
     <button class="mseg-del" onclick="delManualSeg('${kind}',${di},${ii},${idx})">✕</button>
   </div>`;
   }).join("");
-  return `<div class="manual-box">${rows}<button class="mseg-add" onclick="addManualSeg('${kind}',${di},${ii})">＋ 加一段（站到站）</button></div>`;
+  return `<div class="manual-box">${rows}<button class="mseg-add" onclick="addManualSeg('${kind}',${di},${ii})">＋ 加一段（站到站）</button><button class="mseg-done" onclick="toggleLeg(${di},${ii})">✓ 完成編輯</button></div>`;
 }
 function ensureManual(kind,di,ii){
   const ref=legRouteRef(kind,di,ii); let r=ref.get();
@@ -776,20 +793,23 @@ function recalcManual(r){
 }
 function addManualSeg(kind,di,ii){
   const ref=ensureManual(kind,di,ii), r=ref.get();
-  r.steps.push({mode:'train',line:'',from:'',to:'',mins:'',pass:'no'});
+  r.steps.push({mode:'train',line:'',from:'',to:'',mins:'',pass:'no'}); r._userEdited=true;
   recalcManual(r); ref.setM(r.totalMin); recompute(); scheduleSave();
 }
 function setManualSeg(kind,di,ii,idx,field,val){
   const ref=legRouteRef(kind,di,ii), r=ref.get(); if(!r||!r.steps||!r.steps[idx]) return;
-  if(field==='line' && val==='__c'){ const c=prompt('輸入線名'); if(c==null){ recompute(); return; } val=c.trim(); }
+  if((field==='line'||field==='from'||field==='to') && val==='__c'){
+    const c=prompt(field==='line'?'輸入線名':'輸入車站名'); if(c==null){ recompute(); return; } val=c.trim();
+  }
   if(field==='mins') r.steps[idx].mins=(val===''?'':Math.max(0,parseInt(val,10)||0));
   else r.steps[idx][field]=val;
   const s=r.steps[idx]; s.pass = (s.mode==='walk')?'no':classifyPass(s.line||'');
+  r._userEdited=true;
   recalcManual(r); ref.setM(r.totalMin); recompute(); scheduleSave();
 }
 function delManualSeg(kind,di,ii,idx){
   const ref=legRouteRef(kind,di,ii), r=ref.get(); if(!r||!r.steps) return;
-  r.steps.splice(idx,1);
+  r.steps.splice(idx,1); r._userEdited=true;
   if(!r.steps.length){ ref.setR({source:'none',steps:[],transfers:0,buffer:0,totalMin:null}); ref.setM(null); }
   else { recalcManual(r); ref.setM(r.totalMin); }
   recompute(); scheduleSave();
@@ -857,7 +877,7 @@ function renderRouteDetail(r){
       const pico=pass==='jr'?'JR Pass 可用':'自費';
       const mlabel=mode==='bus'?'公車':mode==='cable'?'纜車':'電車';
       const seg=(x.from||x.to)?`${x.from||''} → ${x.to||''}　`:"";
-      rows+=`<div class="rstep ${mode}"><span class="rmode">${mlabel}</span><span class="rtxt"><b>${line}</b><br>${seg}${x.mins!=null?'約'+x.mins+'分':''}<span class="line-chip ${pcls}">${pico}</span></span></div>`;
+      rows+=`<div class="rstep ${mode}"><span class="rmode">${mlabel}</span><span class="rtxt"><b>${line}</b><br>${seg}${x.mins!=null?'約'+x.mins+'分':''}<span class="line-chip ${pcls}">${pico}</span>${x.tk?`<br><span class="rtk">🎫 ${x.tk}</span>`:''}</span></div>`;
     }
   });
   const tcount=steps.filter(s=>(s.mode||'train')!=='walk').length;
@@ -875,6 +895,22 @@ function move(di,ii,dir){
 function del(di,ii){ STATE.days[di].items.splice(ii,1); resetDayRoutes(di); recompute(); scheduleSave(); }
 
 /* ============ 交通計算 ============ */
+function toManual(kind,di,ii){
+  const ref=legRouteRef(kind,di,ii), cur=ref.get();
+  let steps=[];
+  if(cur&&cur.steps&&cur.steps.length){ steps=cur.steps.map(s=>({mode:s.mode||'train',line:s.line||'',from:s.from||'',to:s.to||'',mins:(s.mins!=null&&s.mins!==''?s.mins:''),pass:s.pass||'no'})); }
+  if(!steps.length) steps=[{mode:'train',line:'',from:'',to:'',mins:'',pass:'no'}];
+  const r={source:'manual',steps:steps,transfers:0,buffer:0,totalMin:null,_userEdited:false};
+  recalcManual(r); ref.setR(r); if(r.totalMin!=null) ref.setM(r.totalMin);
+  recompute(); scheduleSave();
+}
+function recalcLeg(kind,di,ii){
+  const ref=legRouteRef(kind,di,ii), r=ref.get();
+  if(r && r._userEdited){
+    if(!confirm('這段你手動改過。確定要覆蓋成內建路線嗎?（你的修改會被取代）')) return;
+  }
+  if(kind==='spot') calcLeg(di,ii); else calcAirportLeg(di,kind);
+}
 function calcLeg(di,ii){
   const day=STATE.days[di], a=day.items[ii], b=day.items[ii+1]; if(!a||!b) return;
   resolveLeg(a.name,b.name,{lat:a.lat,lng:a.lng},{lat:b.lat,lng:b.lng}, legRouteRef('spot',di,ii));
@@ -886,7 +922,7 @@ function calcAirportLeg(di,dir){
   else { const ap=AIRPORTS[s.retFromAirport], it=day.items[day.items.length-1]; if(!ap) return; from={lat:it.lat,lng:it.lng}; to={lat:ap.lat,lng:ap.lng}; fromName=it.name; toName=ap.name; }
   resolveLeg(fromName,toName,from,to, legRouteRef(dir,di,0));
 }
-function setLegMin(di,ii,val){ const v=val===""?null:Math.max(0,parseInt(val,10)||0); STATE.days[di].items[ii]._legMin=v; recompute(); scheduleSave(); }
+function setLegMin(di,ii,val){ const v=val===""?null:Math.max(0,parseInt(val,10)||0); const it=STATE.days[di].items[ii]; it._legMin=v; if(it._route) it._route._userEdited=true; recompute(); scheduleSave(); }
 function setAirportMin(di,dir,val){ const v=val===""?null:Math.max(0,parseInt(val,10)||0); const d=STATE.days[di]; if(dir==='in') d._airportInMin=v; else d._airportOutMin=v; recompute(); scheduleSave(); }
 function legRouteRef(kind,di,ii){
   const day=STATE.days[di];
@@ -901,18 +937,10 @@ function depTime(){
 }
 function resolveLeg(fromName,toName,from,to,ref){
   const apply=route=>{ ref.setR(route); if(route&&route.totalMin!=null) ref.setM(route.totalMin); recompute(); scheduleSave(); };
-  const hasCoords = from&&to&&from.lat!=null&&from.lng!=null&&to.lat!=null&&to.lng!=null;
-  if(MAPS_READY && dirService && hasCoords){
-    dirService.route({origin:from,destination:to,travelMode:google.maps.TravelMode.TRANSIT,transitOptions:{departureTime:depTime()},provideRouteAlternatives:true},(res,status)=>{
-      if(status==="OK" && res.routes && res.routes.length){
-        const parsed=res.routes.map(rt=>parseRoute(rt.legs[0]));
-        parsed.sort((a,b)=>(a.transfers-b.transfers)||(a.totalMin-b.totalMin));
-        const alts=parsed.slice(0,3).map(p=>({transfers:p.transfers,totalMin:p.totalMin,buffer:p.buffer,steps:p.steps}));
-        const best=Object.assign({},alts[0],{alts:alts,source:'google',_altIdx:0});
-        apply(best);
-      } else { applyFallback(fromName,toName,apply,status); }
-    });
-  } else { applyFallback(fromName,toName,apply,'NO_MAPS'); }
+  // 日本大眾運輸 Google API 查不到(ZERO_RESULTS),改以內建為準；查無則留手動空白
+  const b=builtinRoute(fromName,toName);
+  if(b){ apply(b); return; }
+  applyFallback(fromName,toName,apply,'BUILTIN_ONLY');
 }
 function applyFallback(fromName,toName,apply,status){
   const b=builtinRoute(fromName,toName);
@@ -958,11 +986,15 @@ function parseRoute(leg){
 function builtinRoute(aName,bName){
   const a=aName||"", b=bName||"";
   const hk=(s,arr)=>arr.some(k=>s.indexOf(k)>=0);
-  const train=(line,f,t,m,pass)=>({mode:'train',line:line,from:f,to:t,mins:m,pass:pass||'jr'});
-  const bus=(line,f,t,m)=>({mode:'bus',line:line,from:f,to:t,mins:m,pass:'no'});
+  const train=(line,f,t,m,pass,tk)=>({mode:'train',line:line,from:f,to:t,mins:m,pass:pass||'jr',tk:tk||''});
+  const bus=(line,f,t,m,tk)=>({mode:'bus',line:line,from:f,to:t,mins:m,pass:'no',tk:tk||''});
   const mk=(total,steps)=>({source:'builtin',steps:steps,transfers:Math.max(steps.filter(s=>s.mode!=='walk').length-1,0),buffer:0,totalMin:total});
-  const cb=(line,f,t,m)=>({mode:'cable',line:line,from:f,to:t,mins:m,pass:'no'});
+  const cb=(line,f,t,m,tk)=>({mode:'cable',line:line,from:f,to:t,mins:m,pass:'no',tk:tk||''});
   const wk=(m)=>({mode:'walk',mins:m});
+  const TK_LOOP='上車購票或買一日券・免劃位';
+  const TK_HAKUTO='JR 廣域 Pass 可用(含智頭急行)・綠色窗口免費劃「指定席」・自由席免劃';
+  const TK_CABLE=(st)=>'纜車需另購票(JR Pass 不含)・在「'+st+'」現場購票・免劃位';
+  const TK_BUS='巴士上車付現或一日券・免劃位';
   const pr=(x,y)=>(hk(a,x)&&hk(b,y))||(hk(a,y)&&hk(b,x));
   // ===== 你的行程專屬站到站（參考、平日約略、非即時） =====
   const _KIX=['KIX','關西','関西','機場','空港'];
@@ -982,17 +1014,54 @@ function builtinRoute(aName,bName){
   if(pr(_KIX,_VIA)) return mk(55,[train('JR特急 遙(はるか)','關西空港站','新大阪站',50,'jr'),wk(5)]);
   if(pr(_VIA,_DOTON)) return mk(22,[wk(5),train('大阪地下鐵 御堂筋線','新大阪站','難波站',12,'no'),wk(5)]);
   if(pr(_VIA,_SUN)) return mk(38,[train('JR京都線','新大阪站','大阪站',4,'jr'),train('JR神戶線 新快速','大阪站','三宮站',22,'jr'),wk(8)]);
-  if(pr(_SUN,_KITANO)) return mk(15,[bus('神戶 City Loop 觀光巴士','三宮','北野異人館',10),wk(5)]);
-  if(pr(_KITANO,_HERB)) return mk(20,[wk(10),cb('神戶布引纜車','新神戶站','香草園山頂',10)]);
-  if(pr(_HERB,_MAYA)) return mk(60,[cb('布引纜車','香草園','新神戶站',10),bus('神戶市巴士 18系統','三宮','摩耶纜車下站',20),cb('摩耶纜車(ケーブル)','摩耶纜車下站','虹之站',5),cb('摩耶空中纜車(ロープウェー)','虹之站','星之站・掬星台',5)]);
-  if(pr(_MAYA,_SUN)) return mk(40,[cb('摩耶空中纜車＋纜車','掬星台','摩耶纜車下站',10),bus('神戶市巴士 18系統','摩耶纜車下站','三宮',20),wk(8)]);
+  if(pr(_SUN,_KITANO)) return mk(15,[bus('神戶 City Loop 觀光巴士','三宮','北野異人館',10,TK_LOOP),wk(5)]);
+  if(pr(_KITANO,_HERB)) return mk(20,[wk(10),cb('神戶布引纜車','新神戶站','香草園山頂',10,TK_CABLE('ハーブ園山麓駅'))]);
+  if(pr(_HERB,_MAYA)) return mk(60,[cb('布引纜車','香草園','新神戶站',10,TK_CABLE('ハーブ園山麓駅')),bus('神戶市巴士 18系統','三宮','摩耶纜車下站',20,TK_BUS),cb('摩耶纜車(ケーブル)','摩耶纜車下站','虹之站',5,TK_CABLE('摩耶ケーブル下駅')),cb('摩耶空中纜車(ロープウェー)','虹之站','星之站・掬星台',5)]);
+  if(pr(_MAYA,_SUN)) return mk(40,[cb('摩耶空中纜車＋纜車','掬星台','摩耶纜車下站',10,TK_CABLE('星の駅')),bus('神戶市巴士 18系統','摩耶纜車下站','三宮',20,TK_BUS),wk(8)]);
   if(pr(_SUN,_PORT)) return mk(13,[wk(13)]);
   if(pr(_PORT,_SAN)) return mk(15,[wk(15)]);
-  if(pr(_SAN,_KURA)) return mk(160,[train('JR特急 超級白兔(はくと)','三宮站','倉吉站',160,'jr')]);
-  if(pr(_KURA,_MISASA)) return mk(28,[bus('日丸巴士 三朝線','倉吉站','三朝溫泉',25),wk(3)]);
-  if(pr(_MISASA,_CONAN)) return mk(52,[bus('日丸巴士 三朝線','三朝溫泉','倉吉站',25),train('JR山陰本線','倉吉站','由良站(柯南站)',12,'jr'),wk(15)]);
-  if(pr(_MISASA,_TOT)) return mk(52,[bus('日丸巴士 三朝線','三朝溫泉','倉吉站',25),train('JR山陰本線','倉吉站','鳥取站',27,'jr')]);
-  if(pr(_TOT,_OSA)) return mk(150,[train('JR特急 超級白兔(はくと)','鳥取站','大阪站',150,'jr')]);
+  if(pr(_SAN,_KURA)) return mk(160,[train('JR特急 超級白兔(はくと)','三宮站','倉吉站',160,'jr',TK_HAKUTO)]);
+  if(pr(_KURA,_MISASA)) return mk(28,[bus('日丸巴士 三朝線','倉吉站','三朝溫泉',25,TK_BUS),wk(3)]);
+  if(pr(_MISASA,_CONAN)) return mk(52,[bus('日丸巴士 三朝線','三朝溫泉','倉吉站',25,TK_BUS),train('JR山陰本線','倉吉站','由良站(柯南站)',12,'jr'),wk(15)]);
+  if(pr(_MISASA,_TOT)) return mk(52,[bus('日丸巴士 三朝線','三朝溫泉','倉吉站',25,TK_BUS),train('JR山陰本線','倉吉站','鳥取站',27,'jr')]);
+  if(pr(_TOT,_OSA)) return mk(150,[train('JR特急 超級白兔(はくと)','鳥取站','大阪站',150,'jr',TK_HAKUTO)]);
+  // ===== 神戶市內主要景點（手寫・平日約略） =====
+  const KB_SAN=['三宮','三ノ宮','三の宮','神戶三宮','神戸三宮','元町'];
+  const KB_KITANO=['北野','異人館'];
+  const KB_NANKIN=['南京町','中華街'];
+  const KB_PORT=['神戶港','神戸港','メリケン','ハーバーランド','馬賽克','モザイク','港區'];
+  const KB_HERB=['布引','香草','ハーブ'];
+  const KB_MAYA=['摩耶','掬星'];
+  const KB_ARIMA=['有馬'];
+  const KB_MAIKO=['舞子','明石海峽','明石海峡','明石大橋'];
+  const KB_ROKKO=['六甲'];
+  const kp=(x,y)=>(hk(a,x)&&hk(b,y))||(hk(a,y)&&hk(b,x));
+  if(kp(KB_SAN,KB_KITANO)) return mk(15,[bus('神戶 City Loop 觀光巴士','三宮','北野異人館',10,TK_LOOP),wk(5)]);
+  if(kp(KB_SAN,KB_NANKIN)) return mk(10,[wk(10)]);
+  if(kp(KB_SAN,KB_PORT)) return mk(15,[wk(15)]);
+  if(kp(KB_KITANO,KB_NANKIN)) return mk(20,[wk(18)]);
+  if(kp(KB_NANKIN,KB_PORT)) return mk(10,[wk(8)]);
+  if(kp(KB_SAN,KB_HERB)) return mk(20,[train('地下鐵西神山手線','三宮站','新神戶站',2,'no'),wk(5),cb('神戶布引纜車','ハーブ園山麓駅','山頂',10,TK_CABLE('ハーブ園山麓駅'))]);
+  if(kp(KB_SAN,KB_MAYA)) return mk(50,[bus('神戶市巴士 18系統','三宮','摩耶纜車下站',20,TK_BUS),cb('摩耶纜車＋空中纜車(まやビューライン)','摩耶纜車下站','掬星台',10,TK_CABLE('摩耶ケーブル下駅'))]);
+  if(kp(KB_SAN,KB_ARIMA)) return mk(45,[train('地下鐵＋神戶電鐵(經谷上)','三宮站','有馬溫泉站',42,'no')]);
+  if(kp(KB_SAN,KB_MAIKO)) return mk(45,[train('JR神戶線(山陽本線)','三宮站','舞子站',40,'jr'),wk(5)]);
+  if(kp(KB_SAN,KB_ROKKO)) return mk(45,[train('JR神戶線','三宮站','六甲道站',6,'jr'),bus('神戶市巴士＋六甲纜車','六甲道站','六甲山上',38,TK_CABLE('六甲ケーブル下駅'))]);
+  // ===== 鳥取主要景點（手寫・平日約略） =====
+  const TT_TOT=['鳥取站','鳥取駅'];
+  const TT_DUNE=['砂丘','砂之美術館','砂の美術館','砂の'];
+  const TT_HAKUTO=['白兔','白兎'];
+  const TT_KURA=['倉吉'];
+  const TT_MISASA=['三朝','萬翠','万翠'];
+  const TT_CONAN=['柯南','青山剛昌','コナン','由良'];
+  const TT_SAKAI=['境港','水木','米子'];
+  const tp=(x,y)=>(hk(a,x)&&hk(b,y))||(hk(a,y)&&hk(b,x));
+  if(tp(TT_TOT,TT_DUNE)) return mk(25,[bus('日丸/日交 砂丘線巴士(麒麟獅子循環)','鳥取站','鳥取砂丘',22,TK_BUS)]);
+  if(tp(TT_TOT,TT_HAKUTO)) return mk(45,[bus('日ノ丸巴士 鹿野線','鳥取站','白兔神社前',40,TK_BUS)]);
+  if(tp(TT_TOT,TT_KURA)) return mk(50,[train('JR山陰本線(普通/特急)','鳥取站','倉吉站',45,'jr')]);
+  if(tp(TT_KURA,TT_MISASA)) return mk(28,[bus('日丸巴士 三朝線','倉吉站','三朝溫泉',25,TK_BUS),wk(3)]);
+  if(tp(TT_KURA,TT_CONAN)) return mk(27,[train('JR山陰本線','倉吉站','由良站(柯南站)',12,'jr'),wk(15)]);
+  if(tp(TT_MISASA,TT_CONAN)) return mk(52,[bus('日丸巴士 三朝線','三朝溫泉','倉吉站',25,TK_BUS),train('JR山陰本線','倉吉站','由良站(柯南站)',12,'jr'),wk(15)]);
+  if(tp(TT_TOT,TT_SAKAI)) return mk(110,[train('JR山陰本線(特急)','鳥取站','米子站',55,'jr'),train('JR境線','米子站','境港站',45,'jr')]);
   // ===== 通用主幹（其餘景點） =====
   const OSAKA=['大阪','梅田','難波','道頓堀','通天閣','新世界','海遊館','環球','USJ','心斎橋','天王寺'];
   const KYOTO=['京都','清水','伏見','稻荷','稲荷','金閣','嵐山','祇園','二条'];
@@ -1034,6 +1103,46 @@ function builtinRoute(aName,bName){
   if(hk(a,['六甲'])||hk(b,['六甲'])) return mk(45,[train('JR神戶線','三宮站','六甲道站',6,'jr'),bus('神戶市巴士＋六甲纜車','六甲道站','六甲山上',38)]);
   if(pair(['有馬'],['三宮','三ノ宮','神戶','神戸','北野','南京'])) return mk(45,[bus('阪急/神姬巴士','三宮','有馬溫泉',42)]);
   if(pair(['境港','水木'],['米子','鳥取'])) return mk(50,[train('JR境線','米子站','境港站',45,'jr')]);
+  // ===== 大阪市內主要景點（手寫・平日約略） =====
+  const OS_UMEDA=['梅田','大阪駅','大阪站','大阪駅','藍天','梅田藍天'];
+  const OS_NAMBA=['難波','なんば','道頓堀','心斎橋','心齋橋'];
+  const OS_CASTLE=['大阪城'];
+  const OS_USJ=['環球','USJ','ユニバ'];
+  const OS_AQUA=['海遊館'];
+  const OS_TEN=['通天閣','新世界','天王寺','動物園前'];
+  const op=(x,y)=>(hk(a,x)&&hk(b,y))||(hk(a,y)&&hk(b,x));
+  if(op(OS_UMEDA,OS_CASTLE)) return mk(12,[train('JR大阪環狀線','大阪站','大阪城公園站',9,'jr'),wk(3)]);
+  if(op(OS_UMEDA,OS_NAMBA))  return mk(10,[train('大阪地下鐵 御堂筋線','梅田站','難波站',9,'no')]);
+  if(op(OS_UMEDA,OS_TEN))    return mk(16,[train('大阪地下鐵 御堂筋線','梅田站','動物園前站',14,'no'),wk(2)]);
+  if(op(OS_UMEDA,OS_USJ))    return mk(20,[train('JR大阪環狀線→ゆめ咲線','大阪站','環球城站',18,'jr'),wk(2)]);
+  if(op(OS_UMEDA,OS_AQUA))   return mk(27,[train('大阪地下鐵 御堂筋線','梅田站','本町站',3,'no'),train('大阪地下鐵 中央線','本町站','大阪港站',18,'no'),wk(5)]);
+  if(op(OS_NAMBA,OS_CASTLE)) return mk(17,[train('大阪地下鐵 御堂筋線','難波站','本町站',3,'no'),train('大阪地下鐵 中央線','本町站','谷町四丁目站',6,'no'),wk(8)]);
+  if(op(OS_NAMBA,OS_TEN))    return mk(8,[train('大阪地下鐵 御堂筋線','難波站','動物園前站',5,'no'),wk(3)]);
+  if(op(OS_NAMBA,OS_USJ))    return mk(28,[train('阪神/地下鐵','難波','西九条',12,'no'),train('JRゆめ咲線','西九条站','環球城站',6,'jr'),wk(3)]);
+  if(op(OS_NAMBA,OS_AQUA))   return mk(22,[train('大阪地下鐵 御堂筋線','難波站','本町站',3,'no'),train('大阪地下鐵 中央線','本町站','大阪港站',15,'no'),wk(5)]);
+  if(op(OS_CASTLE,OS_TEN))   return mk(14,[train('JR大阪環狀線','大阪城公園站','天王寺站',12,'jr'),wk(2)]);
+  if(op(OS_USJ,OS_AQUA))     return mk(12,[bus('Captain Line 渡船','環球城港','海遊館西碼頭',10),wk(2)]);
+  // ===== 京都市內主要景點（手寫・平日約略） =====
+  const KY_STA=['京都站','京都駅'];
+  const KY_KIYO=['清水'];
+  const KY_FUSHI=['伏見','稻荷','稲荷'];
+  const KY_KINKAKU=['金閣'];
+  const KY_ARASHI=['嵐山','竹林','嵯峨'];
+  const KY_GION=['祇園','八坂','花見小路'];
+  const KY_NIJO=['二条城'];
+  const yp=(x,y)=>(hk(a,x)&&hk(b,y))||(hk(a,y)&&hk(b,x));
+  if(yp(KY_STA,KY_KIYO))    return mk(18,[bus('京都市巴士 100/206 系統','京都站前','五条坂',15,TK_BUS),wk(10)]);
+  if(yp(KY_STA,KY_FUSHI))   return mk(8,[train('JR奈良線','京都站','稻荷站',5,'jr'),wk(2)]);
+  if(yp(KY_STA,KY_KINKAKU)) return mk(42,[bus('京都市巴士 205/急行101','京都站前','金閣寺道',40,TK_BUS),wk(3)]);
+  if(yp(KY_STA,KY_ARASHI))  return mk(20,[train('JR嵯峨野線(山陰本線)','京都站','嵯峨嵐山站',17,'jr'),wk(5)]);
+  if(yp(KY_STA,KY_GION))    return mk(22,[bus('京都市巴士 100/206 系統','京都站前','祇園',20,TK_BUS)]);
+  if(yp(KY_STA,KY_NIJO))    return mk(14,[train('京都地下鐵 烏丸線','京都站','烏丸御池站',6,'no'),train('京都地下鐵 東西線','烏丸御池站','二条城前站',2,'no'),wk(3)]);
+  if(yp(KY_KIYO,KY_GION))   return mk(18,[wk(18)]);
+  if(yp(KY_KIYO,KY_FUSHI))  return mk(15,[train('京阪電車','清水五条站','伏見稻荷站',10,'no'),wk(5)]);
+  if(yp(KY_GION,KY_FUSHI))  return mk(14,[train('京阪電車','祇園四条站','伏見稻荷站',9,'no'),wk(5)]);
+  if(yp(KY_KINKAKU,KY_ARASHI)) return mk(40,[bus('京都市巴士 + 嵐電','金閣寺道','嵐山',38,TK_BUS)]);
+  if(yp(KY_GION,KY_KINKAKU)) return mk(42,[bus('京都市巴士 12/59 系統','祇園','金閣寺道',40,TK_BUS)]);
+  if(yp(KY_ARASHI,KY_FUSHI)) return mk(32,[train('JR嵯峨野線','嵯峨嵐山站','京都站',17,'jr'),train('JR奈良線','京都站','稻荷站',5,'jr')]);
   return null;
 }
 function classifyPass(text){
