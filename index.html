@@ -179,6 +179,14 @@ label.lbl{font-size:12px;color:var(--muted);font-weight:600;display:block;margin
 .src-edit{background:#fff3d6;color:#8a5a00;margin-left:4px}
 .to-manual{display:block;width:100%;margin:8px 0 0;padding:8px;border:1px dashed var(--line);border-radius:8px;background:#fff;color:var(--indigo);font-size:12.5px;font-weight:600}
 .mseg-done{display:block;width:100%;margin:8px 0 0;padding:10px;border:none;border-radius:8px;background:var(--indigo);color:#fff;font-size:13.5px;font-weight:700}
+.tw-card{margin:0 0 12px;padding:11px 12px;border:1px solid var(--indigo-soft);background:var(--paper-2);border-radius:10px}
+.tw-title{font-size:12.5px;font-weight:700;color:var(--indigo);margin-bottom:8px}
+.tw-fields{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.tw-fields label{font-size:12px;color:var(--ink);display:flex;align-items:center;gap:4px}
+.tw-fields input{width:62px;padding:5px 6px;border:1px solid var(--line);border-radius:6px;font-size:12.5px}
+.tw-fields input[type=time]{width:92px}
+.tw-calc{font-size:12px;line-height:1.7;color:var(--muted);border-top:1px dashed var(--line);padding-top:7px}
+.tw-calc b{color:var(--indigo);font-size:13px}
 .route-head{font-size:11px;color:var(--muted);margin:4px 0 6px}
 .route-steps{display:flex;flex-direction:column}
 .rstep{display:flex;gap:8px;align-items:flex-start;padding:5px 0 5px 10px;border-left:3px solid var(--line);margin-left:3px}
@@ -319,7 +327,6 @@ label.lbl{font-size:12px;color:var(--muted);font-weight:600;display:block;margin
       </div>
 
       <button class="btn map-open" onclick="openMapView()">🗺 在地圖上查看順路</button>
-      <button class="btn map-open" style="background:#7a3b8f;color:#fff" onclick="testGoogleTransit()">🔬 測試 Google 大眾運輸</button>
       <div id="dayContainer"></div>
 
       <div class="card">
@@ -390,7 +397,6 @@ label.lbl{font-size:12px;color:var(--muted);font-weight:600;display:block;margin
     </div>
     <div id="searchResults" style="margin-bottom:6px"></div>
     <div class="quick-add">
-      <button onclick="addHome()">＋ 住家</button>
       <button onclick="addAirportSpot('in')">＋ 抵達機場</button>
       <button onclick="addAirportSpot('out')">＋ 出發機場</button>
     </div>
@@ -448,7 +454,7 @@ const STATE = {
   checklist: JSON.parse(JSON.stringify(DEFAULT_CHECKLIST)),
   pendingSpot:null
 };
-let MAPS_READY=false, FB_READY=false, dirService=null, placesService=null;
+let MAPS_READY=false, FB_READY=false;
 const hasMapsKey = GOOGLE_MAPS_API_KEY && !GOOGLE_MAPS_API_KEY.startsWith("YOUR_");
 const hasFbKey   = FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.startsWith("YOUR_");
 const AUTH_KEY="jp_travel_auth";
@@ -460,24 +466,34 @@ function clearLocalCode(){ try{ localStorage.removeItem(AUTH_KEY); }catch(e){} }
 const SPOTS = {
   "大阪":[
     {n:"大阪城",jp:"大阪城",lat:34.6873,lng:135.5259},{n:"道頓堀",jp:"道頓堀",lat:34.6687,lng:135.5013},
+    {n:"心齋橋",jp:"心斎橋",lat:34.6723,lng:135.5007},{n:"梅田（大阪站）",jp:"大阪駅",lat:34.7025,lng:135.4937},
+    {n:"梅田藍天大廈",jp:"梅田スカイビル 空中庭園展望台",lat:34.7052,lng:135.4897},{n:"GRAND GREEN大阪",jp:"グラングリーン大阪",lat:34.7038,lng:135.4944},
+    {n:"中之島公園",jp:"中之島公園",lat:34.6929,lng:135.5106},{n:"通天閣・新世界",jp:"通天閣",lat:34.6525,lng:135.5063},
     {n:"環球影城 USJ",jp:"ユニバーサル・スタジオ・ジャパン",lat:34.6654,lng:135.4323},{n:"海遊館",jp:"海遊館",lat:34.6545,lng:135.4290},
-    {n:"通天閣・新世界",jp:"通天閣",lat:34.6525,lng:135.5063},{n:"梅田藍天大廈",jp:"梅田スカイビル 空中庭園展望台",lat:34.7052,lng:135.4897}
+    {n:"天保山摩天輪",jp:"天保山大観覧車",lat:34.6555,lng:135.4319}
   ],
   "京都":[
     {n:"清水寺",jp:"清水寺",lat:34.9949,lng:135.7850},{n:"伏見稻荷大社",jp:"伏見稲荷大社",lat:34.9671,lng:135.7727},
-    {n:"金閣寺",jp:"金閣寺",lat:35.0394,lng:135.7292},{n:"嵐山・竹林小徑",jp:"嵐山 竹林の小径",lat:35.0094,lng:135.6737},
-    {n:"祇園",jp:"祇園",lat:35.0036,lng:135.7750},{n:"二条城",jp:"二条城",lat:35.0142,lng:135.7481}
+    {n:"金閣寺",jp:"金閣寺",lat:35.0394,lng:135.7292},{n:"銀閣寺",jp:"銀閣寺",lat:35.0270,lng:135.7982},
+    {n:"二条城",jp:"二条城",lat:35.0142,lng:135.7481},{n:"錦市場",jp:"錦市場",lat:35.0050,lng:135.7649},
+    {n:"嵐山・竹林小徑",jp:"嵐山 竹林の小径",lat:35.0094,lng:135.6737},{n:"渡月橋",jp:"渡月橋",lat:35.0132,lng:135.6779},
+    {n:"嵯峨野小火車",jp:"嵯峨野トロッコ列車",lat:35.0185,lng:135.6826},{n:"祇園",jp:"祇園",lat:35.0036,lng:135.7750},
+    {n:"任天堂博物館",jp:"ニンテンドーミュージアム",lat:34.9061,lng:135.7742},{n:"京都鐵道博物館",jp:"京都鉄道博物館",lat:34.9886,lng:135.7470}
   ],
   "神戶":[
-    {n:"神戶港・馬賽克廣場",jp:"神戸ハーバーランド モザイク",lat:34.6796,lng:135.1808},{n:"北野異人館",jp:"北野異人館街",lat:34.7005,lng:135.1885},
+    {n:"神戶港・馬賽克廣場",jp:"神戸ハーバーランド モザイク",lat:34.6796,lng:135.1808},{n:"神戶港塔",jp:"神戸ポートタワー",lat:34.6829,lng:135.1881},
+    {n:"美利堅公園",jp:"メリケンパーク",lat:34.6824,lng:135.1869},{n:"北野異人館",jp:"北野異人館街",lat:34.7005,lng:135.1885},
     {n:"南京町中華街",jp:"南京町",lat:34.6886,lng:135.1880},{n:"有馬溫泉",jp:"有馬温泉",lat:34.7976,lng:135.2477},
     {n:"明石海峽大橋・舞子",jp:"明石海峡大橋",lat:34.6336,lng:135.0203},{n:"六甲山",jp:"六甲山",lat:34.7783,lng:135.2622},
-    {n:"摩耶山・掬星台",jp:"摩耶山 掬星台",lat:34.7274,lng:135.2122},{n:"布引香草園",jp:"神戸布引ハーブ園",lat:34.7066,lng:135.1955}
+    {n:"摩耶山・掬星台",jp:"摩耶山 掬星台",lat:34.7274,lng:135.2122},{n:"布引香草園",jp:"神戸布引ハーブ園",lat:34.7066,lng:135.1955},
+    {n:"須磨海岸",jp:"須磨海岸",lat:34.6433,lng:135.1294}
   ],
   "鳥取":[
     {n:"鳥取砂丘",jp:"鳥取砂丘",lat:35.5396,lng:134.2307},{n:"砂之美術館",jp:"砂の美術館",lat:35.5378,lng:134.2289},
-    {n:"鳥取站",jp:"鳥取駅",lat:35.4906,lng:134.2354},{n:"境港・水木茂之路",jp:"水木しげるロード",lat:35.5430,lng:133.2300},
-    {n:"青山剛昌故鄉館（柯南）",jp:"青山剛昌ふるさと館",lat:35.4880,lng:133.7989},{n:"米子站",jp:"米子駅",lat:35.4280,lng:133.3308}
+    {n:"鳥取城跡",jp:"鳥取城跡",lat:35.5085,lng:134.2456},{n:"賀露港海鮮市場",jp:"かろいち",lat:35.5447,lng:134.2009},
+    {n:"浦富海岸",jp:"浦富海岸",lat:35.5793,lng:134.3017},{n:"境港・水木茂之路",jp:"水木しげるロード",lat:35.5430,lng:133.2300},
+    {n:"青山剛昌故鄉館（柯南）",jp:"青山剛昌ふるさと館",lat:35.4880,lng:133.7989},
+    {n:"三朝溫泉",jp:"三朝温泉",lat:35.4044,lng:133.8836},{n:"皆生溫泉",jp:"皆生温泉",lat:35.4499,lng:133.3155}
   ]
 };
 let activeCity="大阪";
@@ -499,7 +515,7 @@ function enterDemo(){ STATE.demo=true; STATE.code=null; startApp(); }
 function startApp(){
   document.getElementById("loginScreen").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
-  document.getElementById("modeLabel").textContent = (STATE.demo? "示範模式" : "已登入")+" · v19";
+  document.getElementById("modeLabel").textContent = (STATE.demo? "示範模式" : "已登入")+" · v25";
   buildFlightSelects();
   const s=STATE.settings;
   const setv=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v; };
@@ -677,11 +693,12 @@ function addSpotToTarget(spot){
   if(idx-1>=0) calcLeg(di,idx-1);
   if(idx<day.items.length-1) calcLeg(di,idx);
 }
-function addHome(){
-  if(addTargetDay==null) return;
-  addSpotToTarget({name:"住家",_home:true,stay:0});
-  const day=STATE.days[addTargetDay];
-  if(day.items[0] && day.items[0]._home && STATE.settings.homeToAirport){ day.items[0]._legMin=STATE.settings.homeToAirport; recompute(); scheduleSave(); }
+function setTwField(f,val){
+  const s=STATE.settings;
+  if(f==='outDepartTime') s.outDepartTime=val||'08:00';
+  else s[f]=Math.max(0,parseInt(val,10)||0);
+  const el=document.getElementById(f); if(el) el.value=s[f];
+  recompute(); renderDays(); scheduleSave();
 }
 function addAirportSpot(dir){
   if(addTargetDay==null) return;
@@ -694,17 +711,16 @@ function addAirportSpot(dir){
 function resetDayRoutes(di){
   const day=STATE.days[di]; if(!day) return;
   day.items.forEach(x=>{x._route=null;x._arrive=null;x._legMin=null});
-  day._airportInRoute=null; day._airportInMin=null; day._airportOutRoute=null; day._airportOutMin=null;
 }
 
 /* ============ 行程渲染 ============ */
 function cityClass(it){
   if(it._airport) return 'c-air'; if(it._home) return 'c-home';
   const n=it.name||""; const has=a=>a.some(k=>n.indexOf(k)>=0);
-  if(has(['大阪','梅田','難波','道頓','通天','新世界','海遊','環球','USJ','心斎','天王寺'])) return 'c-osaka';
-  if(has(['京都','清水','伏見','稻荷','稲荷','金閣','嵐山','祇園','二条'])) return 'c-kyoto';
-  if(has(['神戶','神戸','三宮','北野','南京','有馬','舞子','明石','六甲','摩耶','布引','燦路都'])) return 'c-kobe';
-  if(has(['鳥取','砂丘','境港','米子','柯南','青山','由良','倉吉','三朝'])) return 'c-tottori';
+  if(has(['大阪','梅田','難波','道頓','通天','新世界','海遊','環球','USJ','心斎','心齋','天王寺','グラングリーン','GRAND','中之島','天保山'])) return 'c-osaka';
+  if(has(['京都','清水','伏見','稻荷','稲荷','金閣','銀閣','嵐山','祇園','二条','錦','渡月','トロッコ','嵯峨','任天堂','ニンテンドー','鉄道','鐵道'])) return 'c-kyoto';
+  if(has(['神戶','神戸','三宮','北野','南京','有馬','舞子','明石','六甲','摩耶','布引','燦路都','港塔','ポートタワー','メリケン','美利堅','須磨'])) return 'c-kobe';
+  if(has(['鳥取','砂丘','砂','境港','米子','柯南','青山','由良','倉吉','三朝','城跡','賀露','かろいち','浦富','皆生'])) return 'c-tottori';
   return 'c-other';
 }
 function gmapUrl(from,to){
@@ -715,12 +731,11 @@ function gmapUrl(from,to){
   return `https://www.google.com/maps/dir/?api=1&origin=${o}&destination=${d}&travelmode=transit`;
 }
 function legData(kind,di,ii){
-  const day=STATE.days[di], s=STATE.settings;
-  if(kind==='spot'){ const it=day.items[ii], nx=day.items[ii+1]; return {kind,di,ii,min:it._legMin, route:it._route, note:it._legNote||"", gmap:gmapUrl(it,nx), calc:`recalcLeg('spot',${di},${ii})`, setMin:`setLegMin(${di},${ii},this.value)`, setNote:`setLegNote('spot',${di},${ii},this.value)`}; }
-  if(kind==='in'){ const ap=AIRPORTS[s.outToAirport]; return {kind,di,ii:0,min:day._airportInMin, route:day._airportInRoute, note:day._airportInNote||"", gmap:gmapUrl(ap,day.items[0]), calc:`recalcLeg('in',${di},0)`, setMin:`setAirportMin(${di},'in',this.value)`, setNote:`setLegNote('in',${di},0,this.value)`}; }
-  const ap=AIRPORTS[s.retFromAirport]; return {kind,di,ii:0,min:day._airportOutMin, route:day._airportOutRoute, note:day._airportOutNote||"", gmap:gmapUrl(day.items[day.items.length-1],ap), calc:`recalcLeg('out',${di},0)`, setMin:`setAirportMin(${di},'out',this.value)`, setNote:`setLegNote('out',${di},0,this.value)`};
+  const day=STATE.days[di];
+  const it=day.items[ii], nx=day.items[ii+1];
+  return {kind,di,ii,min:it._legMin, route:it._route, note:it._legNote||"", gmap:gmapUrl(it,nx), calc:`recalcLeg('spot',${di},${ii})`, setMin:`setLegMin(${di},${ii},this.value)`, setNote:`setLegNote('spot',${di},${ii},this.value)`};
 }
-const LINES=['JR神戶線','JR京都線','JR大阪環狀線','JR山陰本線','JR嵯峨野線(山陰本線)','JR奈良線','JR寶塚線','JRゆめ咲線','JR境線','JR特急 遙(はるか)','JR特急 超級白兔(はくと)','智頭急行','大阪地下鐵 御堂筋線','大阪地下鐵 谷町線','大阪地下鐵 中央線','大阪地下鐵 四橋線','京都地下鐵 烏丸線','京都地下鐵 東西線','阪急電車','阪神電車','近鐵','南海電車','京阪電車','Port Liner','神戶 City Loop 觀光巴士','神戶市巴士 18系統','京都市巴士','日丸巴士 三朝線','日丸/日交 砂丘線巴士','摩耶纜車(ケーブル)','摩耶空中纜車(ロープウェー)','布引纜車','六甲纜車','Captain Line 渡船'];
+const LINES=['JR神戶線','JR京都線','JR大阪環狀線','JR山陰本線','JR嵯峨野線(山陰本線)','JR奈良線','JR寶塚線','JRゆめ咲線','JR境線','JR特急 遙(はるか)','JR特急 超級白兔(はくと)','智頭急行','大阪地下鐵 御堂筋線','大阪地下鐵 谷町線','大阪地下鐵 中央線','大阪地下鐵 四橋線','京都地下鐵 烏丸線','京都地下鐵 東西線','神戶地下鐵 海岸線','阪急電車','阪神電車','近鐵','南海電車','京阪電車','Port Liner','神戶 City Loop 觀光巴士','神戶市巴士 18系統','京都市巴士','日丸巴士 三朝線','日丸/日交 砂丘線巴士','摩耶纜車(ケーブル)','摩耶空中纜車(ロープウェー)','布引纜車','六甲纜車','Captain Line 渡船'];
 const STATIONS=['大阪站(梅田)','新大阪站','難波站','心斎橋站','本町站','大阪港站','大阪城公園站','谷町四丁目站','天王寺站','動物園前站','西九条站','環球城站(USJ)','關西空港站','京都站','稻荷站','嵯峨嵐山站','烏丸御池站','二条城前站','清水五条站','祇園四条站','金閣寺道','五条坂','三宮站','新神戶站','元町站','六甲道站','舞子站','有馬溫泉站','摩耶纜車下站','掬星台','香草園山麓站','神戶空港站','倉吉站','三朝溫泉','鳥取站','由良站(柯南站)','米子站','境港站','鳥取砂丘','白兔神社前'];
 function legSummary(r){
   if(!r) return '約 — 分・待設定';
@@ -744,10 +759,6 @@ function makeLeg(kind,di,ii){
     html+=`<div class="leg-body"><div class="leg-top"><span class="leg-min-wrap">約 <input type="number" class="leg-min" value="${minVal}" placeholder="—" onchange="${d.setMin}"> 分</span>${MAPS_READY?`<button class="calc-icon" title="重新套用內建路線" onclick="${d.calc}">↻</button>`:""}</div>`;
     if(r&&(r.source==='google'||r.source==='builtin')){
       html+=renderRouteDetail(r);
-      if(r.alts&&r.alts.length>1){
-        const chips=r.alts.map((a,idx)=>`<button class="alt-chip${idx===(r._altIdx||0)?' on':''}" onclick="chooseAlt('${kind}',${di},${ii},${idx})">路線${idx+1}·${a.transfers===0?'直達':a.transfers+'轉'}·${a.totalMin}分</button>`).join("");
-        html+=`<div class="alt-row"><span class="alt-lbl">其他路線：</span>${chips}</div>`;
-      }
       html+=`<button class="to-manual" onclick="toManual('${kind}',${di},${ii})">✎ 改成自己填（複製此路線再修改）</button>`;
     } else {
       if(r&&r._auto) html+=`<div class="leg-hint2">查無自動資料,請補站到站(或用 Google Maps 查)</div>`;
@@ -826,6 +837,18 @@ function renderDays(){
     head.innerHTML=`<div><span class="day-tag mincho">Day ${di+1}</span>${dstr?`<span class="day-date">${dstr}</span>`:""}</div>${startHtml}`;
     card.appendChild(head);
 
+    if(di===0){
+      const tw=document.createElement("div"); tw.className="tw-card";
+      tw.innerHTML=`<div class="tw-title">🛫 出發日（台灣端）</div>
+        <div class="tw-fields">
+          <label>家→機場 <input type="number" value="${s.homeToAirport!=null?s.homeToAirport:60}" onchange="setTwField('homeToAirport',this.value)"> 分</label>
+          <label>起飛 <input type="time" value="${s.outDepartTime||'08:00'}" onchange="setTwField('outDepartTime',this.value)"></label>
+          <label>報到緩衝 <input type="number" value="${s.checkinBuffer!=null?s.checkinBuffer:120}" onchange="setTwField('checkinBuffer',this.value)"> 分</label>
+        </div>
+        <div class="tw-calc">🏠 <b>${day._homeDepart||'--:--'}</b> 從家出發 → ✈️ <b>${day._twAirportArrive||'--:--'}</b> 到 ${AIRPORTS[s.outFromAirport]?AIRPORTS[s.outFromAirport].name:s.outFromAirport} → ${s.outDepartTime||''} 起飛 → 🛬 ${s.arriveTime||''} 抵達 ${AIRPORTS[s.outToAirport]?AIRPORTS[s.outToAirport].name:s.outToAirport}</div>`;
+      card.appendChild(tw);
+    }
+
     const route=document.createElement("div"); route.className="route";
 
     // 所有停留點（含機場/住家，均為一般可編輯卡）
@@ -886,8 +909,6 @@ function renderRouteDetail(r){
 }
 function setDayStart(di,val){ STATE.days[di].start=val||"09:00"; recompute(); scheduleSave(); }
 function setStay(di,ii,val){ STATE.days[di].items[ii].stay=Math.max(0,parseInt(val||"0",10)||0); recompute(); scheduleSave(); }
-function setAirportLeave(val){ const d=STATE.days[0]; if(!d) return; d.airportLeave=val||""; d.airportLeaveManual=true; recompute(); scheduleSave(); }
-function resetAirportLeave(){ const d=STATE.days[0]; if(!d) return; d.airportLeaveManual=false; recompute(); scheduleSave(); }
 function move(di,ii,dir){
   const arr=STATE.days[di].items, j=ii+dir; if(j<0||j>=arr.length) return;
   [arr[ii],arr[j]]=[arr[j],arr[ii]]; resetDayRoutes(di); recompute(); scheduleSave();
@@ -909,31 +930,16 @@ function recalcLeg(kind,di,ii){
   if(r && r._userEdited){
     if(!confirm('這段你手動改過。確定要覆蓋成內建路線嗎?（你的修改會被取代）')) return;
   }
-  if(kind==='spot') calcLeg(di,ii); else calcAirportLeg(di,kind);
+  calcLeg(di,ii);
 }
 function calcLeg(di,ii){
   const day=STATE.days[di], a=day.items[ii], b=day.items[ii+1]; if(!a||!b) return;
   resolveLeg(a.name,b.name,{lat:a.lat,lng:a.lng},{lat:b.lat,lng:b.lng}, legRouteRef('spot',di,ii));
 }
-function calcAirportLeg(di,dir){
-  const day=STATE.days[di], s=STATE.settings; if(!day.items.length) return;
-  let from,to,fromName,toName;
-  if(dir==='in'){ const ap=AIRPORTS[s.outToAirport], it=day.items[0]; if(!ap) return; from={lat:ap.lat,lng:ap.lng}; to={lat:it.lat,lng:it.lng}; fromName=ap.name; toName=it.name; }
-  else { const ap=AIRPORTS[s.retFromAirport], it=day.items[day.items.length-1]; if(!ap) return; from={lat:it.lat,lng:it.lng}; to={lat:ap.lat,lng:ap.lng}; fromName=it.name; toName=ap.name; }
-  resolveLeg(fromName,toName,from,to, legRouteRef(dir,di,0));
-}
 function setLegMin(di,ii,val){ const v=val===""?null:Math.max(0,parseInt(val,10)||0); const it=STATE.days[di].items[ii]; it._legMin=v; if(it._route) it._route._userEdited=true; recompute(); scheduleSave(); }
-function setAirportMin(di,dir,val){ const v=val===""?null:Math.max(0,parseInt(val,10)||0); const d=STATE.days[di]; if(dir==='in') d._airportInMin=v; else d._airportOutMin=v; recompute(); scheduleSave(); }
 function legRouteRef(kind,di,ii){
   const day=STATE.days[di];
-  if(kind==='spot') return {get:()=>day.items[ii]._route, setR:v=>day.items[ii]._route=v, setM:v=>day.items[ii]._legMin=v};
-  if(kind==='in') return {get:()=>day._airportInRoute, setR:v=>day._airportInRoute=v, setM:v=>day._airportInMin=v};
-  return {get:()=>day._airportOutRoute, setR:v=>day._airportOutRoute=v, setM:v=>day._airportOutMin=v};
-}
-function depTime(){
-  const d=new Date(); d.setDate(d.getDate()+1);
-  const w=d.getDay(); if(w===6) d.setDate(d.getDate()+2); else if(w===0) d.setDate(d.getDate()+1);
-  d.setHours(10,0,0,0); return d;
+  return {get:()=>day.items[ii]._route, setR:v=>day.items[ii]._route=v, setM:v=>day.items[ii]._legMin=v};
 }
 function resolveLeg(fromName,toName,from,to,ref){
   const apply=route=>{ ref.setR(route); if(route&&route.totalMin!=null) ref.setM(route.totalMin); recompute(); scheduleSave(); };
@@ -947,42 +953,11 @@ function applyFallback(fromName,toName,apply,status){
   if(b){ apply(b); }
   else { apply({source:'manual',_auto:true,steps:[{mode:'train',line:'',from:'',to:'',mins:'',pass:'no'}],transfers:0,buffer:0,totalMin:null}); }
 }
-function chooseAlt(kind,di,ii,idx){
-  const ref=legRouteRef(kind,di,ii), r=ref.get();
-  if(!r||!r.alts||!r.alts[idx]) return;
-  const a=r.alts[idx];
-  ref.setR(Object.assign({},a,{alts:r.alts,source:r.source||'google',_altIdx:idx}));
-  if(a.totalMin!=null) ref.setM(a.totalMin);
-  recompute(); scheduleSave();
-}
 function setLegNote(kind,di,ii,val){
-  const day=STATE.days[di]; if(!day) return;
-  if(kind==='spot'){ if(day.items[ii]) day.items[ii]._legNote=val; }
-  else if(kind==='in') day._airportInNote=val;
-  else day._airportOutNote=val;
-  scheduleSave();
+  const day=STATE.days[di]; if(!day||!day.items[ii]) return;
+  day.items[ii]._legNote=val; scheduleSave();
 }
-function parseRoute(leg){
-  const BUFFER_PER_TRANSFER=5; const steps=[]; let transit=0;
-  (leg.steps||[]).forEach(s=>{
-    const mins=Math.round((((s.duration&&s.duration.value)||0))/60);
-    if(s.travel_mode==="WALKING"){
-      if(mins>=1) steps.push({mode:'walk',mins:mins});
-    } else if(s.travel_mode==="TRANSIT" && s.transit){
-      transit++;
-      const td=s.transit, line=td.line||{};
-      const agency=(line.agencies&&line.agencies[0]&&line.agencies[0].name)||"";
-      const vt=(line.vehicle&&(line.vehicle.type||line.vehicle.name))||"";
-      const name=line.name||line.short_name||agency||"電車";
-      const isBus=/BUS|INTERCITY_BUS|TROLLEYBUS/i.test(vt)||/バス|\bbus\b/i.test(name);
-      steps.push({mode:isBus?'bus':'train',line:name,from:(td.departure_stop&&td.departure_stop.name)||"",to:(td.arrival_stop&&td.arrival_stop.name)||"",mins:mins,pass:classifyPass(name+" "+agency+" "+vt)});
-    }
-  });
-  const transfers=Math.max(transit-1,0);
-  const total=Math.round((((leg.duration&&leg.duration.value)||0))/60)+transfers*BUFFER_PER_TRANSFER;
-  return {steps:steps,transfers:transfers,buffer:transfers*BUFFER_PER_TRANSFER,totalMin:total,source:'google'};
-}
-/* 內建參考路線（僅在 Google 查無時使用，平日約略、非即時） */
+/* 內建參考路線（平日約略、非即時） */
 function builtinRoute(aName,bName){
   const a=aName||"", b=bName||"";
   const hk=(s,arr)=>arr.some(k=>s.indexOf(k)>=0);
@@ -1018,8 +993,8 @@ function builtinRoute(aName,bName){
   if(pr(_KITANO,_HERB)) return mk(20,[wk(10),cb('神戶布引纜車','新神戶站','香草園山頂',10,TK_CABLE('ハーブ園山麓駅'))]);
   if(pr(_HERB,_MAYA)) return mk(60,[cb('布引纜車','香草園','新神戶站',10,TK_CABLE('ハーブ園山麓駅')),bus('神戶市巴士 18系統','三宮','摩耶纜車下站',20,TK_BUS),cb('摩耶纜車(ケーブル)','摩耶纜車下站','虹之站',5,TK_CABLE('摩耶ケーブル下駅')),cb('摩耶空中纜車(ロープウェー)','虹之站','星之站・掬星台',5)]);
   if(pr(_MAYA,_SUN)) return mk(40,[cb('摩耶空中纜車＋纜車','掬星台','摩耶纜車下站',10,TK_CABLE('星の駅')),bus('神戶市巴士 18系統','摩耶纜車下站','三宮',20,TK_BUS),wk(8)]);
-  if(pr(_SUN,_PORT)) return mk(13,[wk(13)]);
-  if(pr(_PORT,_SAN)) return mk(15,[wk(15)]);
+  if(pr(_SUN,_PORT)) return mk(17,[wk(5),train('神戶地下鐵 海岸線','三宮・花時計前站','ハーバーランド站',4,'no'),wk(6)]);
+  if(pr(_PORT,_SAN)) return mk(17,[wk(6),train('神戶地下鐵 海岸線','ハーバーランド站','三宮・花時計前站',4,'no'),wk(5)]);
   if(pr(_SAN,_KURA)) return mk(160,[train('JR特急 超級白兔(はくと)','三宮站','倉吉站',160,'jr',TK_HAKUTO)]);
   if(pr(_KURA,_MISASA)) return mk(28,[bus('日丸巴士 三朝線','倉吉站','三朝溫泉',25,TK_BUS),wk(3)]);
   if(pr(_MISASA,_CONAN)) return mk(52,[bus('日丸巴士 三朝線','三朝溫泉','倉吉站',25,TK_BUS),train('JR山陰本線','倉吉站','由良站(柯南站)',12,'jr'),wk(15)]);
@@ -1029,16 +1004,18 @@ function builtinRoute(aName,bName){
   const KB_SAN=['三宮','三ノ宮','三の宮','神戶三宮','神戸三宮','元町'];
   const KB_KITANO=['北野','異人館'];
   const KB_NANKIN=['南京町','中華街'];
-  const KB_PORT=['神戶港','神戸港','メリケン','ハーバーランド','馬賽克','モザイク','港區'];
+  const KB_PORT=['神戶港','神戸港','メリケン','美利堅','ハーバーランド','馬賽克','モザイク','港區','港塔','ポートタワー'];
   const KB_HERB=['布引','香草','ハーブ'];
   const KB_MAYA=['摩耶','掬星'];
   const KB_ARIMA=['有馬'];
   const KB_MAIKO=['舞子','明石海峽','明石海峡','明石大橋'];
   const KB_ROKKO=['六甲'];
+  const KB_SUMA=['須磨'];
   const kp=(x,y)=>(hk(a,x)&&hk(b,y))||(hk(a,y)&&hk(b,x));
+  if(kp(KB_SAN,KB_SUMA)) return mk(18,[train('JR神戶線(山陽本線)','三宮站','須磨站',15,'jr'),wk(3)]);
   if(kp(KB_SAN,KB_KITANO)) return mk(15,[bus('神戶 City Loop 觀光巴士','三宮','北野異人館',10,TK_LOOP),wk(5)]);
   if(kp(KB_SAN,KB_NANKIN)) return mk(10,[wk(10)]);
-  if(kp(KB_SAN,KB_PORT)) return mk(15,[wk(15)]);
+  if(kp(KB_SAN,KB_PORT)) return mk(17,[wk(5),train('神戶地下鐵 海岸線','三宮・花時計前站','ハーバーランド站',4,'no'),wk(6)]);
   if(kp(KB_KITANO,KB_NANKIN)) return mk(20,[wk(18)]);
   if(kp(KB_NANKIN,KB_PORT)) return mk(10,[wk(8)]);
   if(kp(KB_SAN,KB_HERB)) return mk(20,[train('地下鐵西神山手線','三宮站','新神戶站',2,'no'),wk(5),cb('神戶布引纜車','ハーブ園山麓駅','山頂',10,TK_CABLE('ハーブ園山麓駅'))]);
@@ -1054,7 +1031,16 @@ function builtinRoute(aName,bName){
   const TT_MISASA=['三朝','萬翠','万翠'];
   const TT_CONAN=['柯南','青山剛昌','コナン','由良'];
   const TT_SAKAI=['境港','水木','米子'];
+  const TT_CASTLE=['城跡','鳥取城'];
+  const TT_KARO=['賀露','かろいち'];
+  const TT_URA=['浦富'];
+  const TT_KAIKE=['皆生'];
   const tp=(x,y)=>(hk(a,x)&&hk(b,y))||(hk(a,y)&&hk(b,x));
+  if(tp(TT_TOT,TT_CASTLE)) return mk(12,[bus('日丸/日交 巴士(久松山方向)','鳥取站','鳥取城跡(仁風閣)',10,TK_BUS)]);
+  if(tp(TT_TOT,TT_KARO)) return mk(25,[bus('日ノ丸/日交 賀露・砂丘方向巴士','鳥取站','賀露港(かろいち)',22,TK_BUS)]);
+  if(tp(TT_TOT,TT_URA)) return mk(40,[train('JR山陰本線','鳥取站','岩美站',20,'jr'),bus('岩美町營巴士(浦富海岸方向)','岩美站','浦富海岸',15,TK_BUS)]);
+  if(tp(TT_TOT,TT_KAIKE)||tp(['米子'],TT_KAIKE)) return mk(25,[train('JR山陰本線(特急)','鳥取站','米子站',55,'jr'),bus('日ノ丸巴士 皆生線','米子站','皆生溫泉',20,TK_BUS)]);
+  if(tp(TT_CONAN,TT_TOT)) return mk(40,[train('JR山陰本線','由良站(柯南站)','鳥取站',38,'jr')]);
   if(tp(TT_TOT,TT_DUNE)) return mk(25,[bus('日丸/日交 砂丘線巴士(麒麟獅子循環)','鳥取站','鳥取砂丘',22,TK_BUS)]);
   if(tp(TT_TOT,TT_HAKUTO)) return mk(45,[bus('日ノ丸巴士 鹿野線','鳥取站','白兔神社前',40,TK_BUS)]);
   if(tp(TT_TOT,TT_KURA)) return mk(50,[train('JR山陰本線(普通/特急)','鳥取站','倉吉站',45,'jr')]);
@@ -1104,11 +1090,11 @@ function builtinRoute(aName,bName){
   if(pair(['有馬'],['三宮','三ノ宮','神戶','神戸','北野','南京'])) return mk(45,[bus('阪急/神姬巴士','三宮','有馬溫泉',42)]);
   if(pair(['境港','水木'],['米子','鳥取'])) return mk(50,[train('JR境線','米子站','境港站',45,'jr')]);
   // ===== 大阪市內主要景點（手寫・平日約略） =====
-  const OS_UMEDA=['梅田','大阪駅','大阪站','大阪駅','藍天','梅田藍天'];
+  const OS_UMEDA=['梅田','大阪駅','大阪站','藍天','グラングリーン','GRAND GREEN','中之島'];
   const OS_NAMBA=['難波','なんば','道頓堀','心斎橋','心齋橋'];
   const OS_CASTLE=['大阪城'];
   const OS_USJ=['環球','USJ','ユニバ'];
-  const OS_AQUA=['海遊館'];
+  const OS_AQUA=['海遊館','天保山'];
   const OS_TEN=['通天閣','新世界','天王寺','動物園前'];
   const op=(x,y)=>(hk(a,x)&&hk(b,y))||(hk(a,y)&&hk(b,x));
   if(op(OS_UMEDA,OS_CASTLE)) return mk(12,[train('JR大阪環狀線','大阪站','大阪城公園站',9,'jr'),wk(3)]);
@@ -1127,15 +1113,27 @@ function builtinRoute(aName,bName){
   const KY_KIYO=['清水'];
   const KY_FUSHI=['伏見','稻荷','稲荷'];
   const KY_KINKAKU=['金閣'];
-  const KY_ARASHI=['嵐山','竹林','嵯峨'];
+  const KY_GINKAKU=['銀閣'];
+  const KY_NISHIKI=['錦市場','錦'];
+  const KY_ARASHI=['嵐山','竹林','嵯峨','渡月','トロッコ','小火車'];
   const KY_GION=['祇園','八坂','花見小路'];
   const KY_NIJO=['二条城'];
+  const KY_NINTENDO=['任天堂','ニンテンドー'];
+  const KY_TETSU=['鐵道博物館','鉄道博物館','京都鐵道','京都鉄道'];
   const yp=(x,y)=>(hk(a,x)&&hk(b,y))||(hk(a,y)&&hk(b,x));
   if(yp(KY_STA,KY_KIYO))    return mk(18,[bus('京都市巴士 100/206 系統','京都站前','五条坂',15,TK_BUS),wk(10)]);
   if(yp(KY_STA,KY_FUSHI))   return mk(8,[train('JR奈良線','京都站','稻荷站',5,'jr'),wk(2)]);
   if(yp(KY_STA,KY_KINKAKU)) return mk(42,[bus('京都市巴士 205/急行101','京都站前','金閣寺道',40,TK_BUS),wk(3)]);
+  if(yp(KY_STA,KY_GINKAKU)) return mk(40,[bus('京都市巴士 5/17 系統','京都站前','銀閣寺道',38,TK_BUS),wk(5)]);
+  if(yp(KY_STA,KY_NISHIKI)) return mk(10,[train('京都地下鐵 烏丸線','京都站','四条站',4,'no'),wk(5)]);
+  if(yp(KY_STA,KY_NINTENDO))return mk(35,[train('JR奈良線(快速)','京都站','宇治站',17,'jr'),bus('巴士/步行(建議官網確認接駁)','宇治站','任天堂博物館',15,'巴士或步行・建議查官網接駁')]);
+  if(yp(KY_STA,KY_TETSU))   return mk(8,[train('JR嵯峨野線(山陰本線)','京都站','梅小路京都西站',3,'jr'),wk(4)]);
   if(yp(KY_STA,KY_ARASHI))  return mk(20,[train('JR嵯峨野線(山陰本線)','京都站','嵯峨嵐山站',17,'jr'),wk(5)]);
   if(yp(KY_STA,KY_GION))    return mk(22,[bus('京都市巴士 100/206 系統','京都站前','祇園',20,TK_BUS)]);
+  if(yp(KY_GINKAKU,KY_KIYO))return mk(35,[bus('京都市巴士','銀閣寺道','清水道',32,TK_BUS),wk(8)]);
+  if(yp(KY_GINKAKU,KY_GION))return mk(28,[bus('京都市巴士','銀閣寺道','祇園',26,TK_BUS)]);
+  if(yp(KY_NISHIKI,KY_GION))return mk(14,[wk(12)]);
+  if(yp(KY_NISHIKI,KY_KIYO))return mk(20,[bus('京都市巴士','四条河原町','清水道',16,TK_BUS),wk(8)]);
   if(yp(KY_STA,KY_NIJO))    return mk(14,[train('京都地下鐵 烏丸線','京都站','烏丸御池站',6,'no'),train('京都地下鐵 東西線','烏丸御池站','二条城前站',2,'no'),wk(3)]);
   if(yp(KY_KIYO,KY_GION))   return mk(18,[wk(18)]);
   if(yp(KY_KIYO,KY_FUSHI))  return mk(15,[train('京阪電車','清水五条站','伏見稻荷站',10,'no'),wk(5)]);
@@ -1296,26 +1294,6 @@ function loadMaps(){
   s.src=`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&language=zh-TW&region=JP&callback=__onMaps`;
   s.async=true; document.head.appendChild(s);
 }
-/* ============ 測試 Google 交通 ============ */
-function testGoogleTransit(){
-  if(!MAPS_READY){ alert("地圖尚未載入,稍候再試"); return; }
-  let pts=[]; STATE.days.forEach(d=>d.items.forEach(it=>{ if(it.lat!=null&&it.lng!=null) pts.push(it); }));
-  if(pts.length<2){ alert("需要至少兩個有座標的景點。\n請先用「搜尋」加入景點,或先開一次地圖讓它自動定位。"); return; }
-  const a=pts[0], b=pts[1];
-  alert("開始測試:\n"+a.name+" → "+b.name+"\n(結果稍候跳出)");
-  const ds=new google.maps.DirectionsService();
-  ds.route({origin:{lat:a.lat,lng:a.lng},destination:{lat:b.lat,lng:b.lng},travelMode:google.maps.TravelMode.TRANSIT,region:"jp",transitOptions:{departureTime:depTime()}},(res,status)=>{
-    let msg="🔬 "+a.name+" → "+b.name+"\n狀態碼:"+status+"\n";
-    if(status==="OK"&&res&&res.routes[0]){
-      const leg=res.routes[0].legs[0];
-      msg+="✅ Google 有帶出!總時間:"+leg.duration.text+"\n";
-      leg.steps.forEach(s=>{ if(s.travel_mode==="TRANSIT"&&s.transit){ msg+="🚆 "+s.transit.line.name+" "+s.transit.departure_stop.name+"→"+s.transit.arrival_stop.name+"\n"; } else { msg+="🚶 步行 "+s.duration.text+"\n"; } });
-    } else if(status==="ZERO_RESULTS"){ msg+="❌ Google 查不到大眾運輸(日本 API 限制,證實只能用內建)";
-    } else if(status==="REQUEST_DENIED"){ msg+="⚠️ Directions API 沒啟用或金鑰沒授權";
-    } else { msg+="其他狀況,截圖給我看"; }
-    alert(msg);
-  });
-}
 /* ============ 順路地圖 ============ */
 let _map=null,_markers=[],_lines=[],_geocoder=null,_mapDay='all';
 const DAY_COLORS=['#2E6BB0','#C0392B','#1C7A4E','#D2691E','#7B4FA3','#0E7C86','#B5832B','#993355'];
@@ -1381,8 +1359,6 @@ function renderMapStrip(){
   el.innerHTML=tabs+body;
 }
 window.__onMaps=function(){
-  dirService=new google.maps.DirectionsService();
-  placesService=new google.maps.places.PlacesService(document.createElement("div"));
   MAPS_READY=true; updateStatus(); renderDays();
 };
 function loadFirebase(){
