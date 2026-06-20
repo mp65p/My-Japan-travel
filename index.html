@@ -572,7 +572,7 @@ const STATE = {
   days:[],
   checklist: JSON.parse(JSON.stringify(DEFAULT_CHECKLIST)),
   pendingSpot:null,
-  trips:null, activeId:null
+  trips:null, activeId:null, loadOk:false
 };
 let MAPS_READY=false, FB_READY=false;
 const hasMapsKey = GOOGLE_MAPS_API_KEY && !GOOGLE_MAPS_API_KEY.startsWith("YOUR_");
@@ -635,7 +635,7 @@ function enterDemo(){ STATE.demo=true; STATE.code=null; startApp(); }
 function startApp(){
   document.getElementById("loginScreen").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
-  document.getElementById("modeLabel").textContent = (STATE.demo? "示範模式" : "已登入")+" · v54";
+  document.getElementById("modeLabel").textContent = (STATE.demo? "示範模式" : "已登入")+" · v55";
   buildFlightSelects();
   buildCityTabs();
   ensureTrips();
@@ -1520,10 +1520,12 @@ function delTrip(){ if((STATE.trips||[]).length<=1){ alert("至少要保留一�
 
 function scheduleSave(){
   if(STATE.demo){ setSaveStatus("示範・不儲存"); return; }
+  if(!STATE.loadOk){ setSaveStatus("⚠️ 讀取失敗，已暫停儲存（請重新整理）"); return; }
   if(!FB_READY||!STATE.code){ setSaveStatus("未連線"); return; }
   setSaveStatus("儲存中…"); clearTimeout(saveTimer); saveTimer=setTimeout(saveData,800);
 }
 async function saveData(){
+  if(!STATE.demo && !STATE.loadOk){ setSaveStatus("⚠️ 讀取失敗，已暫停儲存"); return; }
   try{
     syncActiveFromState();
     const clean=JSON.parse(JSON.stringify({activeId:STATE.activeId, trips:STATE.trips, updatedAt:Date.now()}));
@@ -1546,7 +1548,8 @@ async function loadData(code){
         STATE.trips=[t]; STATE.activeId=t.id;
       }
     } else { const t=newTripObj("我的行程"); STATE.trips=[t]; STATE.activeId=t.id; }
-  }catch(e){ const t=newTripObj("我的行程"); STATE.trips=[t]; STATE.activeId=t.id; }
+    STATE.loadOk=true;
+  }catch(e){ const t=newTripObj("我的行程"); STATE.trips=[t]; STATE.activeId=t.id; STATE.loadOk=false; }
   loadActiveIntoState();
 }
 function sanitizeUIFlags(){
