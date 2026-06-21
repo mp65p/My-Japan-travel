@@ -45,6 +45,9 @@ input,select{font-family:inherit;font-size:16px}
 .brand .sub{font-size:10.5px;opacity:.7;letter-spacing:1px}
 .pass-chip{font-size:11px;background:rgba(255,255,255,.14);padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.2)}
 .save-status{font-size:10px;opacity:.8;margin-top:5px;text-align:right}
+.top-right-row{display:flex;align-items:center;justify-content:flex-end;gap:7px}
+.cal-btn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);font-size:15px;text-decoration:none;line-height:1}
+.cal-btn:active{background:rgba(255,255,255,.32)}
 .trip-sel{margin-top:5px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.32);color:#fff;font-size:12px;font-weight:700;padding:3px 11px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;max-width:200px}
 .trip-sel #tripName{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
 .trip-sel .caret{font-size:9px;opacity:.85}
@@ -375,7 +378,10 @@ label.lbl{font-size:12px;color:var(--muted);font-weight:600;display:block;margin
       <div><h1 class="mincho">日本旅遊計畫</h1><div class="sub" id="modeLabel">DEMO</div><button class="trip-sel" onclick="toggleTripMenu(event)">目前：<span id="tripName">—</span> <span class="caret">▾</span></button></div>
     </div>
     <div style="text-align:right">
-      <div class="pass-chip">JR 廣域 Pass</div>
+      <div class="top-right-row">
+        <a href="https://mp65p.github.io/My-Schedule/" target="_blank" rel="noopener" class="cal-btn" aria-label="開啟行事曆" title="開啟行事曆">📅</a>
+        <div class="pass-chip">JR 廣域 Pass</div>
+      </div>
       <div id="saveStatus" class="save-status"></div>
     </div>
   </div>
@@ -635,7 +641,7 @@ function enterDemo(){ STATE.demo=true; STATE.code=null; startApp(); }
 function startApp(){
   document.getElementById("loginScreen").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
-  document.getElementById("modeLabel").textContent = (STATE.demo? "示範模式" : "已登入")+" · v58";
+  document.getElementById("modeLabel").textContent = (STATE.demo? "示範模式" : "已登入")+" · v59";
   buildFlightSelects();
   buildCityTabs();
   ensureTrips();
