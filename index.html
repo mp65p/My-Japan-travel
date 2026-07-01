@@ -643,7 +643,7 @@ function enterDemo(){ STATE.demo=true; STATE.code=null; startApp(); }
 function startApp(){
   document.getElementById("loginScreen").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
-  document.getElementById("modeLabel").textContent = (STATE.demo? "示範模式" : "已登入")+" · v70";
+  document.getElementById("modeLabel").textContent = (STATE.demo? "示範模式" : "已登入")+" · v73";
   buildFlightSelects();
   buildCityTabs();
   ensureTrips();
@@ -773,15 +773,33 @@ async function runSearch(){
     box.innerHTML=`<p class="empty">無法使用 Google 搜尋,可直接加入</p>${manual}`; return;
   }
   try{
-    const r=await google.maps.places.Place.searchByText({textQuery:q,fields:["displayName","location","formattedAddress"],region:"jp",maxResultCount:6});
+    const r=await google.maps.places.Place.searchByText({textQuery:q,fields:["displayName","location","formattedAddress","types"],region:"jp",maxResultCount:8});
     const places=r&&r.places?r.places:[];
     if(!places.length){ box.innerHTML=`<p class="empty">查無結果</p>${manual}`; return; }
+    // 名稱與搜尋字最相符的排最前（避免點到市場內店家）
+    const qn=q.replace(/\s/g,'');
+    const score=p=>{ const n=(p.displayName||'').replace(/\s/g,''); if(n===qn) return 0; if(n.startsWith(qn)) return 1; if(n.indexOf(qn)>=0) return 2; if(qn.indexOf(n)>=0) return 3; return 4; };
+    places.sort((a,b)=>score(a)-score(b));
+    const typeLabel=(types)=>{ const t=types||[]; const has=k=>t.some(x=>x.indexOf(k)>=0);
+      if(has('train_station')||has('subway_station')||has('transit_station')||has('light_rail')) return '🚉車站';
+      if(has('market')) return '🏪市場';
+      if(has('shopping_mall')) return '🛍百貨';
+      if(has('tourist_attraction')||has('point_of_interest')&&has('establishment')&&t.length<=2) return '📍景點';
+      if(has('place_of_worship')||has('shrine')||has('temple')||has('church')) return '⛩寺廟神社';
+      if(has('park')||has('natural_feature')) return '🌳公園';
+      if(has('lodging')||has('hotel')) return '🏨住宿';
+      if(has('restaurant')||has('food')||has('meal_')||has('cafe')||has('bakery')) return '🍽餐飲';
+      if(has('store')||has('shop')||has('_store')) return '🏬店家';
+      if(has('tourist_attraction')) return '📍景點';
+      return ''; };
     box.innerHTML="";
     places.forEach(p=>{
       const name=(p.displayName||q), addr=(p.formattedAddress||"");
       const lat=p.location?p.location.lat():null, lng=p.location?p.location.lng():null;
+      const tl=typeLabel(p.types);
+      const badge=tl?` <span style="font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:1px 6px;white-space:nowrap">${tl}</span>`:"";
       const row=document.createElement("div"); row.className="result-row";
-      row.innerHTML=`<div><div class="name">${name}</div><div class="addr">${addr}</div></div>`;
+      row.innerHTML=`<div style="min-width:0"><div class="name">${name}${badge}</div><div class="addr" style="color:#c2410c;font-weight:600">${addr}</div></div>`;
       const btn=document.createElement("button"); btn.className="btn small"; btn.textContent="加入";
       btn.onclick=()=>addSpotToTarget(lat!=null?{name,lat,lng}:{name});
       row.appendChild(btn); box.appendChild(row);
@@ -814,7 +832,9 @@ function addSpotToTarget(spot){
   else if(lastIt && lastIt._airport==='out'){ idx=day.items.length-1; day.items.splice(idx,0,item); }
   else { idx=day.items.length; day.items.push(item); }
   recompute(); scheduleSave();
-  toast(`已加入 Day ${di+1}：${item.name}`);
+  let far=null;
+  if(item.lat!=null){ let sx=0,sy=0,n=0; STATE.days.forEach(d=>d.items.forEach(it=>{ if(it!==item && it.lat!=null){ sx+=it.lat; sy+=it.lng; n++; } })); if(n>=2){ const dd=_dist(item,{lat:sx/n,lng:sy/n}); if(dd!=null && dd>30000) far=Math.round(dd/1000); } }
+  toast(far? `已加入，但 ⚠ 離其他景點約 ${far}km，定位可能有誤，請確認地址` : `已加入 Day ${di+1}：${item.name}`);
   if(idx-1>=0) calcLeg(di,idx-1);
   if(idx<day.items.length-1) calcLeg(di,idx);
 }
@@ -850,7 +870,8 @@ function cityClass(it){
 }
 function gmapUrl(from,to){
   if(!from||!to) return "";
-  const pick=p=>(p.lat!=null&&p.lng!=null)?`${p.lat},${p.lng}`:encodeURIComponent(p.jp||p.name||"");
+  // 優先用「名字」開圖（座標會落在最近店家，例如錦市場→三木鶏卵）；無名字才用座標
+  const pick=p=>{ const nm=(p.jp||p.name||"").trim(); if(nm){ return encodeURIComponent(/日本|Japan/i.test(nm)?nm:(nm+" 日本")); } return (p.lat!=null&&p.lng!=null)?`${p.lat},${p.lng}`:""; };
   const o=pick(from), d=pick(to);
   if(!o||!d) return "";
   return `https://www.google.com/maps/dir/?api=1&origin=${o}&destination=${d}&travelmode=transit`;
@@ -1360,7 +1381,17 @@ function autoRouteByCoords(A,B){
   const veh=steps.filter(s=>s.mode!=='walk').length;
   return {source:'builtin',_auto:true,_coord:!(SA.db&&SB.db),steps:steps,transfers:Math.max(veh-1,0),totalMin:total};
 }
-function autoRoute(itA,itB){ if(!itA||!itB) return null; const b=builtinRoute(itA.name,itB.name); if(b) return b; return autoRouteByCoords(itA,itB); }
+let _SKIP_CITY=false;
+function autoRoute(itA,itB){
+  if(!itA||!itB) return null;
+  const bothCoord = itA.lat!=null && itB.lat!=null;
+  _SKIP_CITY = bothCoord;                 // 有座標 → 先跳過「城市級粗略備援」，改用座標+車站庫
+  let b=builtinRoute(itA.name,itB.name);
+  _SKIP_CITY=false;
+  if(b) return b;
+  const c=autoRouteByCoords(itA,itB); if(c) return c;
+  return builtinRoute(itA.name,itB.name); // 座標也推不出 → 允許城市級備援
+}
 function builtinRoute(aName,bName){
   const a=aName||"", b=bName||"";
   const hk=(s,arr)=>arr.some(k=>s.indexOf(k)>=0);
@@ -1557,10 +1588,12 @@ function builtinRoute(aName,bName){
   if(pr(_MISASA,_TOT)) return mk(52,[bus('日丸巴士 三朝線','三朝溫泉','倉吉站',25,TK_BUS),train('JR山陰本線','倉吉站','鳥取站',27,'jr')]);
   if(pr(_TOT,_OSA)) return mk(150,[train('JR特急 超級白兔(はくと)','鳥取站','大阪站',150,'jr',TK_HAKUTO)]);
   // 通用城市之間 / 在地接駁（組路器找不到時的城市級備援）
+  if(!_SKIP_CITY){
   if(pair(OSAKA,KYOTO)) return mk(33,[train('JR京都線 新快速','大阪站','京都站',30,'jr')]);
   if(pair(OSAKA,KOBE))  return mk(25,[train('JR神戶線 新快速','大阪站','三宮站',22,'jr')]);
   if(pair(KYOTO,KOBE))  return mk(53,[train('JR新快速','京都站','三宮站',50,'jr')]);
   if(pair(OSAKA,['鳥取'])||pair(['大阪'],['鳥取'])) return mk(155,[train('JR特急 超級白兔(はくと)','大阪站','鳥取站',150,'jr')]);
+  }
   if(hk(a,['六甲'])||hk(b,['六甲'])) return mk(45,[train('JR神戶線','三宮站','六甲道站',6,'jr'),bus('神戶市巴士＋六甲纜車','六甲道站','六甲山上',38)]);
   if(pair(['有馬'],['三宮','三ノ宮','神戶','神戸','北野','南京'])) return mk(45,[bus('阪急/神姬巴士','三宮','有馬溫泉',42)]);
   return null;
