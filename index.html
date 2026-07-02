@@ -643,7 +643,7 @@ function enterDemo(){ STATE.demo=true; STATE.code=null; startApp(); }
 function startApp(){
   document.getElementById("loginScreen").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
-  document.getElementById("modeLabel").textContent = (STATE.demo? "示範模式" : "已登入")+" · v75";
+  document.getElementById("modeLabel").textContent = (STATE.demo? "示範模式" : "已登入")+" · v76";
   buildFlightSelects();
   buildCityTabs();
   ensureTrips();
@@ -873,7 +873,7 @@ function gmapUrl(from,to){
   const nameOf=p=>{ const nm=(p.jp||p.name||"").trim(); return nm?encodeURIComponent(/日本|Japan/i.test(nm)?nm:(nm+" 日本")):""; };
   const coordOf=p=>(p.lat!=null&&p.lng!=null)?`${p.lat},${p.lng}`:"";
   // 有 place_id → 用「名字+place_id」：地點標對、路線也算得出來；沒有 → 退回座標(路線可畫)
-  const ep=p=> p.placeId ? {q:(nameOf(p)||coordOf(p)), pid:p.placeId} : {q:(coordOf(p)||nameOf(p)), pid:null};
+  const ep=p=> p.placeId ? {q:(nameOf(p)||coordOf(p)), pid:p.placeId} : {q:(nameOf(p)||coordOf(p)), pid:null};
   const O=ep(from), D=ep(to);
   if(!O.q||!D.q) return "";
   let u=`https://www.google.com/maps/dir/?api=1&origin=${O.q}&destination=${D.q}&travelmode=transit`;
@@ -1298,7 +1298,7 @@ function hubRoute(h1,h2){
   const via=(x)=>{ const r1=hubRoute(h1,x), r2=hubRoute(x,h2); return (r1&&r2)? r1.concat(r2):null; };
   return via('大阪站') || via('鳥取站') || via('米子站') || null;
 }
-function _findAccess(name){ const s=name||''; return SPOT_ACCESS.find(e=>e.k.some(k=>s.indexOf(k)>=0))||null; }
+function _findAccess(name){ const s=(name||'').toLowerCase(); return SPOT_ACCESS.find(e=>e.k.some(k=>s.indexOf(String(k).toLowerCase())>=0))||null; }
 function _mergeWalks(steps){ const out=[]; for(const s of steps){ if(s.mode==='walk'){ if((s.mins||0)<=0) continue; if(out.length&&out[out.length-1].mode==='walk'){ out[out.length-1]={mode:'walk',mins:out[out.length-1].mins+s.mins}; continue; } } out.push(Object.assign({},s)); } return out; }
 function _mergeSameLine(steps){ const out=[]; for(const s of steps){ const last=out[out.length-1]; if(last && s.mode!=='walk' && s.mode!=='bus' && last.mode===s.mode && last.line===s.line && last.pass===s.pass){ last.to=s.to; last.mins=(last.mins||0)+(s.mins||0); } else out.push(Object.assign({},s)); } return out; }
 function composeAccess(a,b){
@@ -1409,7 +1409,7 @@ function autoRoute(itA,itB){
 }
 function builtinRoute(aName,bName){
   const a=aName||"", b=bName||"";
-  const hk=(s,arr)=>arr.some(k=>s.indexOf(k)>=0);
+  const hk=(s,arr)=>{ const ls=String(s||'').toLowerCase(); return arr.some(k=>ls.indexOf(String(k).toLowerCase())>=0); };
   const train=(line,f,t,m,pass,tk)=>({mode:'train',line:line,from:f,to:t,mins:m,pass:pass||'jr',tk:tk||''});
   const bus=(line,f,t,m,tk)=>({mode:'bus',line:line,from:f,to:t,mins:m,pass:'no',tk:tk||''});
   let REV=false;
@@ -1424,7 +1424,7 @@ function builtinRoute(aName,bName){
   const TK_BUS='巴士上車付現或一日券・免劃位';
   const pr=P;
   // ===== 你的行程專屬站到站（參考、平日約略、非即時） =====
-  const _KIX=['KIX','關西','関西','機場','空港'];
+  const _KIX=['KIX','關西','関西','機場','空港','kansai','airport'];
   const _VIA=['VIA INN','ヴィアイン','VIAINN','新大阪西'];
   const _DOTON=['道頓堀','道頓崛','難波','なんば','心斎橋'];
   const _SUN=['燦路都','Sunroute','ソプラ','燦路','Sopra'];
